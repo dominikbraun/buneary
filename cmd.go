@@ -37,10 +37,6 @@ for managing exchanges, managing queues and publishing messages to exchanges.`,
 
 // publishCommand creates the `buneary publish` command, making sure that exactly
 // four command arguments are passed.
-//
-// runPublishCommand publishes a command by reading the command line data, setting
-// the configuration and calling the PublishMessage function. In case the password
-// or both the user and password aren't provided, it will go into interactive mode.
 func publishCommand(options *globalOptions) *cobra.Command {
 	publish := &cobra.Command{
 		Use:   "publish <ADDRESS> <EXCHANGE> <ROUTING KEY> <BODY>",
