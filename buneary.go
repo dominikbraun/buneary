@@ -2,10 +2,14 @@ package buneary
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/streadway/amqp"
 )
+
+const amqpDefaultPort = 5672
 
 type (
 	// ExchangeType represents the type of an exchange and thus defines its routing
@@ -88,12 +92,9 @@ type Provider interface {
 // AMQPConfig stores AMQP-related configuration values.
 type AMQPConfig struct {
 
-	// Host is the AMQP broker hostname without protocol or port information, for
-	// example `localhost`.
-	Host string
-
-	// Port determines the RabbitMQ AMQP port, for example 5672.
-	Port uint16
+	// Address specifies the RabbitMQ address in the form `localhost:5672`. The
+	// port is not mandatory. If there's no port, 5672 will be used as default.
+	Address string
 
 	// User represents the username for setting up a connection.
 	User string
@@ -103,8 +104,19 @@ type AMQPConfig struct {
 }
 
 // URI returns the AMQP URI for a configuration, prefixed with amqp://.
+// In case the RabbitMQ address lacks a port, the default port will be used.
 func (a *AMQPConfig) URI() string {
-	uri := fmt.Sprintf("amqp://%s:%s@%s:%d", a.User, a.Password, a.Host, a.Port)
+	tokens := strings.Split(a.Address, ":")
+	var port string
+
+	if len(tokens) == 2 {
+		port = tokens[1]
+	} else {
+		port = strconv.Itoa(amqpDefaultPort)
+	}
+
+	uri := fmt.Sprintf("amqp://%s:%s@%s:%s", a.User, a.Password, tokens[0], port)
+
 	return uri
 }
 
@@ -135,10 +147,6 @@ type Exchange struct {
 	// operations related to the passed exchange. For instance, if NoWait is set to
 	// false when creating an exchange, the client won't wait for confirmation.
 	NoWait bool
-}
-
-func (e Exchange) All() (string, string, bool, bool, bool, bool) {
-	return e.Name, string(e.Type), e.Durable, e.AutoDelete, e.Internal, e.NoWait
 }
 
 // Queue represents a message queue.
