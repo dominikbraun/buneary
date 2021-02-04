@@ -2,8 +2,9 @@ package buneary
 
 import (
 	"fmt"
-	"github.com/streadway/amqp"
 	"time"
+
+	"github.com/streadway/amqp"
 )
 
 type (
@@ -79,8 +80,9 @@ type Provider interface {
 	DeleteExchange(exchange Exchange) error
 
 	// DeleteQueue deletes the given queue from the server. Will return an error
-	// if the specified queue name doesn't exist.
-	DeleteQueue(queue Queue) error
+	// if the specified queue name doesn't exist. DeleteQueue purges all remaining
+	// messages and returns the number of purged messages.
+	DeleteQueue(queue Queue) (int, error)
 }
 
 // AMQPConfig stores AMQP-related configuration values.
@@ -301,17 +303,23 @@ func (b *buneary) DeleteExchange(exchange Exchange) error {
 }
 
 // DeleteQueue deletes the given exchange. See Provider.DeleteQueue for details.
-func (b *buneary) DeleteQueue(queue Queue) error {
+func (b *buneary) DeleteQueue(queue Queue) (int, error) {
 	if err := b.setupConnection(); err != nil {
-		return err
+		return 0, err
 	}
 
-	_, err := b.channel.QueueDelete(queue.Name, false, false, false)
+	purged, err := b.channel.QueueDelete(queue.Name, false, false, false)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return purged, nil
+}
+
+// Close closes the AMQP channel to the configured RabbitMQ server. This function
+// should be called after each operation defined by the Provider interface.
+func (b *buneary) Close() error {
+	return b.channel.Close()
 }
 
 // exchangeArgs returns all exchange fields expected by the AMQP library as single
@@ -328,6 +336,8 @@ func exchangeArgs(exchange Exchange) (string, string, bool, bool, bool, bool, am
 
 // queueArgs returns all queue fields expected by the AMQP library as single values.
 // This avoids large parameter lists when calling library functions.
+//
+// ToDo: Store key-value arguments in the queue and provide them from there.
 func queueArgs(queue Queue) (string, bool, bool, bool, bool, amqp.Table) {
 	return queue.Name,
 		queue.Durable,
@@ -339,6 +349,8 @@ func queueArgs(queue Queue) (string, bool, bool, bool, bool, amqp.Table) {
 
 // bindingArgs returns all binding fields expected by the AMQP library as single
 // values. This avoids large parameter lists when calling library functions.
+//
+// ToDo: Store key-value arguments in the binding and provide them from there.
 func bindingArgs(binding Binding) (string, string, string, bool, amqp.Table) {
 	return binding.TargetName,
 		binding.Key,
