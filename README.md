@@ -1,6 +1,6 @@
 # buneary
 
-`buneary`, pronounced _bun_ear_y, is an easy-to-use RabbitMQ command line client for managing exchanges, managing
+`buneary`, pronounced _bun-ear-y_, is an easy-to-use RabbitMQ command line client for managing exchanges, managing
 queues and publishing messages to exchanges.
 
 ## Installation
