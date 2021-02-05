@@ -10,7 +10,7 @@ executors:
 
 jobs:
   # Run static Go-related checks, e.g. code formatting.
-  go-check:
+  go-checks:
     executor: go-container
     steps:
       - checkout
@@ -21,10 +21,10 @@ jobs:
             echo "export PATH=$GOPATH/bin:$PATH" >> $BASH_ENV
       - run:
           name: Check Go format
-          command: python ./scripts/check_fmt.py
+          command: "! go fmt ./... | read"
       - run:
           name: Check Go imports
-          command: python ./scripts/check_imports.py
+          command: "! goimports ./... | read"
 
   # Run all Go tests.
   go-test:
@@ -52,9 +52,9 @@ jobs:
       - checkout
       - run:
           name: Check release in CHANGELOG.md
-          command: python ./scripts/check_changelog.py
+          command: python jobs.py --run check-changelog --tag=${CIRCLE_TAG}
 
-  # Build verless binaries for multiple platforms.
+  # Build buneary binaries for multiple platforms.
   build:
     executor: go-container
     steps:
@@ -69,17 +69,35 @@ jobs:
       - save_cache:
           key: gomodules-v1-{{ checksum "go.mod" }}
           paths: /go/pkg
+      - run: mkdir -p /tmp/artifacts
       - run:
-          name: Build binaries
-          command: python ./scripts/build.py
-      - run:
-          name: Copy archives to /tmp/artifacts
+          name: Build and pack buneary for Linux
           command: |
-            mkdir /tmp/artifacts && cp target/*.* /tmp/artifacts
+            GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
+              -o target/buneary cmd/main.go
+            cp target/buneary buneary
+            tar -czf /tmp/artifacts/buneary-linux-amd64.tar.gz buneary
+            rm buneary
+      - run:
+          name: Build and pack buneary for macOS
+          command: |
+            GOOS=darwin GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
+              -o target/buneary cmd/main.go
+            cp target/buneary buneary
+            tar -czf /tmp/artifacts/buneary-macos-amd64.tar.gz buneary
+            rm buneary
+      - run:
+          name: Build and pack buneary for Windows
+          command: |
+            GOOS=windows GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
+              -o target/buneary.exe cmd/main.go
+            cp target/buneary.exe buneary.exe
+            zip /tmp/artifacts/buneary-windows-amd64.zip buneary.exe
+            rm buneary.exe
       - persist_to_workspace:
           root: /tmp/artifacts
           paths:
-            - verless-*
+            - buneary-*
 
   # Release the packaged binaries to GitHub.
   release-github:
@@ -102,7 +120,7 @@ jobs:
                 -u "${CIRCLE_PROJECT_USERNAME}" \
                 -r "${CIRCLE_PROJECT_REPONAME}" \
                 -c "${CIRCLE_SHA1}" \
-                -b "$(python ./scripts/print_changelog.py)" \
+                -b "$(python jobs.py --run=print-changelog --tag=${CIRCLE_TAG})" \
                 -delete "${CIRCLE_TAG}" \
                 /tmp/artifacts
 
@@ -120,16 +138,16 @@ jobs:
       - run:
           name: Build the distribution Docker image
           command: |
-            docker image build --build-arg VERSION=${CIRCLE_TAG} -t verless/verless:${CIRCLE_TAG} -f scripts/app.Dockerfile .
+            docker image build --build-arg VERSION=${CIRCLE_TAG} -t dominikbraun/buneary:${CIRCLE_TAG} -f Dockerfile .
       - run:
           name: Tag the Docker images as latest
           command: |
-            docker image tag verless/verless:${CIRCLE_TAG} verless/verless:latest
+            docker image tag dominikbraun/buneary:${CIRCLE_TAG} dominikbraun/buneary:latest
       - run:
           name: Publish the image on Docker Hub
           command: |
-            docker image push verless/verless:${CIRCLE_TAG}
-            docker image push verless/verless:latest
+            docker image push dominikbraun/buneary:${CIRCLE_TAG}
+            docker image push dominikbraun/buneary:latest
       - run:
           name: Log in to GitHub Packages
           command: |
@@ -138,23 +156,23 @@ jobs:
       - run:
           name: Tag the previously built Docker image
           command: |
-            docker image tag verless/verless:${CIRCLE_TAG} docker.pkg.github.com/verless/verless/verless:${CIRCLE_TAG}
+            docker image tag dominikbraun/buneary:${CIRCLE_TAG} docker.pkg.github.com/dominikbraun/buneary/buneary:${CIRCLE_TAG}
       - run:
           name: Publish the image on GitHub Packages
           command: |
-            docker image push docker.pkg.github.com/verless/verless/verless:${CIRCLE_TAG}
+            docker image push docker.pkg.github.com/dominikbraun/buneary/buneary:${CIRCLE_TAG}
 
 workflows:
   version: 2
   # The basic CI workflow for single commits and opened PRs.
-  verless-ci:
+  buneary-ci:
     jobs:
-      - go-check
+      - go-checks
       - go-test:
           requires:
-            - go-check
-  # The workflow for delivering the verless application.
-  verless-cd:
+            - go-checks
+  # The workflow for delivering the buneary application.
+  buneary-cd:
     jobs:
       - pre-release-check:
           filters:
