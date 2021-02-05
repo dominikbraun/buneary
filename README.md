@@ -56,19 +56,6 @@ $ buneary create exchange <ADDRESS> <NAME> <TYPE>
 |`<NAME>`|`my-exchange`|The desired name for the exchange.|
 |`<TYPE>`|`direct`|The exchange type. Has to be one of `direct`, `headers`, `fanout` and `topic`.|
 
-```
-Usage:
-  buneary create exchange <ADDRESS> <NAME> <TYPE> [flags]
+### Create a queue
 
-Flags:
-      --auto-delete   make the exchange auto-deleted
-      --durable       make the exchange durable
-  -h, --help          help for exchange
-      --internal      make the exchange internal
-
-Global Flags:
-  -p, --password string   the password to authenticate with
-  -u, --user string       the username to connect with
-```
-
-
+...
