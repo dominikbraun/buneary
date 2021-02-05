@@ -7,7 +7,7 @@ CHANGELOG_FILE = "CHANGELOG.md"
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("run", type=str, help="the job to run")
-    parser.add_argument("tag", type=str, help="the Git tag to work with")
+    parser.add_argument("--tag", type=str, help="the Git tag to work with")
     args = parser.parse_args()
 
     if args.run == "check-changelog":
@@ -45,11 +45,9 @@ def print_changelog(git_tag):
     changelog file. If the release tag does not exist as a release
     number in the changelog, the output will be empty.
     """
-    # We'll start capturing the contents when the given tag appears.
     start = "## [{0}]".format(git_tag[1:])
     # The ## [Unreleased] heading will be ignored.
     unreleased = "## [Unreleased]"
-    # We'll stop capturing the content when the next heading appears.
     end = "## ["
 
     capturing = False
