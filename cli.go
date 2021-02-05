@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-
 	"github.com/spf13/cobra"
+	"os"
+	"strings"
 )
 
 var version = "UNDEFINED"
@@ -110,11 +112,13 @@ func runCreateExchange(options *createExchangeOptions, args []string) error {
 		exchangeType = args[2]
 	)
 
+	user, password := getOrReadInCredentials(options.globalOptions)
+
 	buneary := buneary{
 		config: &AMQPConfig{
 			Address:  address,
-			User:     options.user,
-			Password: options.password,
+			User:     user,
+			Password: password,
 		},
 	}
 
@@ -190,11 +194,13 @@ func runCreateQueue(options *createQueueOptions, args []string) error {
 		queueType = args[2]
 	)
 
+	user, password := getOrReadInCredentials(options.globalOptions)
+
 	buneary := buneary{
 		config: &AMQPConfig{
 			Address:  address,
-			User:     options.user,
-			Password: options.password,
+			User:     user,
+			Password: password,
 		},
 	}
 
@@ -263,11 +269,13 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 		bindingKey = args[3]
 	)
 
+	user, password := getOrReadInCredentials(options.globalOptions)
+
 	buneary := buneary{
 		config: &AMQPConfig{
 			Address:  address,
-			User:     options.user,
-			Password: options.password,
+			User:     user,
+			Password: password,
 		},
 	}
 
@@ -317,11 +325,13 @@ func runPublish(options *globalOptions, args []string) error {
 		body       = args[3]
 	)
 
+	user, password := getOrReadInCredentials(options)
+
 	buneary := buneary{
 		config: &AMQPConfig{
 			Address:  address,
-			User:     options.user,
-			Password: options.password,
+			User:     user,
+			Password: password,
 		},
 	}
 
@@ -378,11 +388,13 @@ func runDeleteExchange(options *globalOptions, args []string) error {
 		name    = args[1]
 	)
 
+	user, password := getOrReadInCredentials(options)
+
 	buneary := buneary{
 		config: &AMQPConfig{
 			Address:  address,
-			User:     options.user,
-			Password: options.password,
+			User:     user,
+			Password: password,
 		},
 	}
 
@@ -420,11 +432,13 @@ func runDeleteQueue(options *globalOptions, args []string) error {
 		name    = args[1]
 	)
 
+	user, password := getOrReadInCredentials(options)
+
 	buneary := buneary{
 		config: &AMQPConfig{
 			Address:  address,
-			User:     options.user,
-			Password: options.password,
+			User:     user,
+			Password: password,
 		},
 	}
 
@@ -453,4 +467,33 @@ func versionCommand() *cobra.Command {
 	}
 
 	return version
+}
+
+// getOrReadInCredentials either returns the credentials directly from the global
+// options or prompts the user to type them in.
+//
+// If both user and password have been set using the --user and --password flags,
+// those values will be used. Otherwise, the user will be asked to type in both.
+//
+// Another option might be to only ask the user for the password in case the --user
+// flag has been specified, but this is not implemented at the moment.
+func getOrReadInCredentials(options *globalOptions) (string, string) {
+	user := options.user
+	password := options.password
+
+	if user != "" && password != "" {
+		return user, password
+	}
+
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Print("User: ")
+	user, _ = reader.ReadString('\n')
+	user = strings.TrimSpace(user)
+
+	fmt.Print("Password: ")
+	password, _ = reader.ReadString('\n')
+	password = strings.TrimSpace(password)
+
+	return user, password
 }
