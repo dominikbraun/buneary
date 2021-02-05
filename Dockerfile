@@ -9,9 +9,9 @@ RUN apk add --no-cache \
     curl \
     tar
 
-RUN curl -LO https://github.com/dominikbraun/buneary/releases/download/${VERSION}/verless-linux-amd64.tar && \
-    tar -xvf buneary-linux-amd64.tar -C /bin && \
-    rm -f buneary-linux-amd64.tar
+RUN curl -LO https://github.com/dominikbraun/buneary/releases/download/${VERSION}/verless-linux-amd64.tar.gz && \
+    tar -xvf buneary-linux-amd64.tar.gz -C /bin && \
+    rm -f buneary-linux-amd64.tar.gz
 
 # The final stage. This is the image that will be distrubuted.
 FROM alpine:3.11.5 AS final
