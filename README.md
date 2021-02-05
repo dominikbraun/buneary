@@ -42,27 +42,17 @@ $ docker container run dominikbraun/buneary version
 
 ### Create an exchange
 
+The following command creates a new exchange called `my-exchange` with type `direct` on a RabbitMQ server running on
+`localhost`.
+
 **Syntax:**
 
 ```
-$ buneary create exchange <ADDRESS> <NAME> <TYPE>
+$ buneary create exchange localhost my-exchange direct
 ```
 
-**Arguments:**
-
-|Argument|Example|Description|
-|-|-|-|
-|`<ADDRESS>`|`localhost`|The RabbitMQ server address. If no port is given, the default port `5672` is used.|
-|`<NAME>`|`my-exchange`|The desired name for the exchange.|
-|`<TYPE>`|`direct`|The exchange type. Has to be one of `direct`, `headers`, `fanout` and `topic`.|
-
-**Flags:**
-
-|Flag|Short|Example|Description|
-|-|-|-|-|
-|--user|-u|`guest`|The username for authenticating against the RabbitMQ server. If no user is specified, you will be prompted to type it in.|
-|--password|-p|`guest`|The password for authenticating against the RabbitMQ server. If no password is specified, you will be prompted to type it in.|
-|--auto-delete|||Delete the exchange automatically once there are no queue bindings left.|
+If there is no port specified for the RabbitMQ server address, the default port `5672` is used. The exchange type has
+to be one of `direct`, `headers`, `fanout` and `topic.`
 
 ### Create a queue
 
