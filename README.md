@@ -35,19 +35,32 @@ Download the [latest release](https://github.com/dominikbraun/buneary/releases),
 Just run `docker container run dominikbraun/buneary` followed by the actual command you want to execute.
 
 ```
-$ docker container run dominikbraun/buneary publish localhost my-exchange my-routingkey "Hello!"
+$ docker container run dominikbraun/buneary version
 ```
 
 ## Usage
 
-### Publishing messages
+### Create an exchange
+
+```
+$ buneary create exchange <ADDRESS> <NAME> <TYPE>
+```
 
 ...
 
-### Creating exchanges
+```
+Usage:
+  buneary create exchange <ADDRESS> <NAME> <TYPE> [flags]
 
-...
+Flags:
+      --auto-delete   make the exchange auto-deleted
+      --durable       make the exchange durable
+  -h, --help          help for exchange
+      --internal      make the exchange internal
 
-## Creating queues
+Global Flags:
+  -p, --password string   the password to authenticate with
+  -u, --user string       the username to connect with
+```
 
-...
+
