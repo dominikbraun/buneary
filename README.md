@@ -19,6 +19,7 @@ queues and publishing messages to exchanges.
 
 ## Contents
 
+* [Example](#example)
 * [Installation](#installation)
     * [macOS/Linux](#macoslinux)
     * [Windows](#windows)
@@ -30,6 +31,18 @@ queues and publishing messages to exchanges.
     * [Publish a message](#publish-a-message)
     * [Delete an exchange](#delete-an-exchange)
     * [Delete a queue](#delete-a-queue)
+    
+## Example
+
+In the following example, a message `Hello!` is published and sent to an exchange called `my-exchange`. The RabbitMQ
+server is running on the local machine, and we'll use a routing key called `my-routing-key` for the message.
+
+```
+$ buneary publish localhost my-exchange my-routing-key "Hello!"
+```
+
+Since the RabbitMQ server listens to the default port, the port can be omitted here. The above command will prompt you
+for the username and password, but you could do this using options as well.
 
 ## Installation
 
