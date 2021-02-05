@@ -76,7 +76,7 @@ jobs:
             GOOS=linux GOARCH=amd64 go build \
               -v \
               -ldflags "-X main.version=${CIRCLE_TAG}" \
-              -o target/buneary main.go
+              -o target/buneary .
             cp target/buneary buneary
             tar -czf /tmp/artifacts/buneary-linux-amd64.tar.gz buneary
             rm buneary
@@ -86,7 +86,7 @@ jobs:
             GOOS=darwin GOARCH=amd64 go build \
               -v \
               -ldflags "-X main.version=${CIRCLE_TAG}" \
-              -o target/buneary main.go
+              -o target/buneary .
             cp target/buneary buneary
             tar -czf /tmp/artifacts/buneary-darwin-amd64.tar.gz buneary
             rm buneary
@@ -96,7 +96,7 @@ jobs:
             GOOS=windows GOARCH=amd64 go build \
               -v \
               -ldflags "-X main.version=${CIRCLE_TAG}" \
-              -o target/buneary.exe main.go
+              -o target/buneary.exe .
             cp target/buneary.exe buneary.exe
             zip /tmp/artifacts/buneary-windows-amd64.zip buneary.exe
             rm buneary.exe
