@@ -1,7 +1,7 @@
 <h1>buneary
-<a href="https://circleci.com/gh/verless/verless"><img src="https://circleci.com/gh/verless/verless.svg?style=shield"></a>
-<a href="https://www.codefactor.io/repository/github/verless/verless"><img src="https://www.codefactor.io/repository/github/verless/verless/badge" /></a>
-<a href="https://github.com/verless/verless/releases"><img src="https://img.shields.io/github/v/release/verless/verless?sort=semver"></a>
+<a href="https://circleci.com/gh/dominikbraun/buneary"><img src="https://circleci.com/gh/dominikbraun/buneary.svg?style=shield"></a>
+<a href="https://www.codefactor.io/repository/github/dominikbraun/buneary"><img src="https://www.codefactor.io/repository/github/dominikbraun/buneary/badge" /></a>
+<a href="https://github.com/dominikbraun/buneary/releases"><img src="https://img.shields.io/github/v/release/dominikbraun/buneary?sort=semver"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-brightgreen"></a>
 </h1>
 
@@ -66,7 +66,7 @@ Because `buneary` needs to dial the RabbitMQ server, the Docker container needs 
 RabbitMQ server. For example, if the server is running on your local machine, you could run a command as follows:
 
 ```
-$ docker container run dominikbraun/buneary --network=host publish ... 
+$ docker container run --network=host dominikbraun/buneary version
 ```
 
 ## Usage
