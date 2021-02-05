@@ -8,14 +8,12 @@
 `buneary`, pronounced _bun-ear-y_, is an easy-to-use RabbitMQ command line client for managing exchanges, managing
 queues and publishing messages to exchanges.
 
-<p align="center">
+<p>
 <br>
 <img src="logo.png" alt="buneary">
 <br>
 <br>
 </p>
-
----
 
 ## Installation
 
