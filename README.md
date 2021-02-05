@@ -63,8 +63,8 @@ $ buneary create exchange <ADDRESS> <NAME> <TYPE> [flags]
 
 |Flag|Short|Description|
 |-|-|-|
-|`--user`|`-u`|The username to connect with.|
-|`--password`|`-p`|The password to authenticate with.|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
 |`--auto-delete`||Automatically delete the exchange once there are no bindings left.|
 |`--durable`||Make the exchange persistent, surviving server restarts.|
 |`--internal`||Make the exchange internal.|
