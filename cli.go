@@ -4,9 +4,12 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var version = "UNDEFINED"
@@ -492,9 +495,23 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 	user, _ = reader.ReadString('\n')
 	user = strings.TrimSpace(user)
 
+	signalCh := make(chan os.Signal)
+	signal.Notify(signalCh, os.Interrupt)
+
+	go func() {
+		<-signalCh
+		os.Exit(0)
+	}()
+
 	fmt.Print("Password: ")
-	password, _ = reader.ReadString('\n')
-	password = strings.TrimSpace(password)
+
+	p, err := terminal.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		fmt.Println("error reading password from stdin")
+		os.Exit(1)
+	}
+
+	password = string(p)
 
 	return user, password
 }
