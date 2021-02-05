@@ -19,15 +19,15 @@ queues and publishing messages to exchanges.
 
 ## Installation
 
-Download the [latest release](https://github.com/dominikbraun/buneary/releases) for your desired platform.
-
 ### macOS/Linux
 
-Extract the downloaded binary into a directory like `/usr/local/bin`. Make sure the directory is in `PATH`.
+Download the [latest release](https://github.com/dominikbraun/buneary/releases) for your platform. Extract the
+downloaded binary into a directory like `/usr/local/bin`. Make sure the directory is in `PATH`.
 
 ### Windows
 
-Create a directory like `C:\Program Files\buneary` and extract the executable into that directory.
+Download the [latest release](https://github.com/dominikbraun/buneary/releases), create a directory like
+`C:\Program Files\buneary` and extract the executable into that directory.
 [Add the directory to `Path`](https://www.computerhope.com/issues/ch000549.htm).
 
 ### Docker
@@ -42,11 +42,19 @@ $ docker container run dominikbraun/buneary version
 
 ### Create an exchange
 
+**Syntax:**
+
 ```
 $ buneary create exchange <ADDRESS> <NAME> <TYPE>
 ```
 
-...
+**Arguments:**
+
+|Argument|Example|Description|
+|-|-|-|
+|`<ADDRESS>`|`localhost`|The RabbitMQ server address. If no port is given, the default port `5672` is used.|
+|`<NAME>`|`my-exchange`|The desired name for the exchange.|
+|`<TYPE>`|`direct`|The exchange type. Has to be one of `direct`, `headers`, `fanout` and `topic`.|
 
 ```
 Usage:
