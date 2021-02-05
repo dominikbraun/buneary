@@ -21,10 +21,10 @@ jobs:
             echo "export PATH=$GOPATH/bin:$PATH" >> $BASH_ENV
       - run:
           name: Check Go format
-          command: "! go fmt ./... | read"
+          command: "! go fmt -l . | read"
       - run:
           name: Check Go imports
-          command: "! goimports ./... | read"
+          command: "! goimports -l . | read"
 
   # Run all Go tests.
   go-test:
