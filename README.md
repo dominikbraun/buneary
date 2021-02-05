@@ -15,6 +15,8 @@ queues and publishing messages to exchanges.
 <br>
 </p>
 
+---
+
 ## Installation
 
 ### macOS/Linux
