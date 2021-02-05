@@ -32,10 +32,13 @@ Download the [latest release](https://github.com/dominikbraun/buneary/releases),
 
 ### Docker
 
-Just run `docker container run dominikbraun/buneary` followed by the actual command you want to execute.
+Just append the actual `buneary` command you want to run after the image name.
+
+Because `buneary` needs to dial the RabbitMQ server, the Docker container needs to be in the same network as the
+RabbitMQ server. For example, if the server is running on your local machine, you could run a command as follows:
 
 ```
-$ docker container run dominikbraun/buneary version
+$ docker container run dominikbraun/buneary --network=host publish ... 
 ```
 
 ## Usage
