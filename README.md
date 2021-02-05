@@ -1,4 +1,4 @@
-# buneary
+# buneary <a href="https://circleci.com/gh/verless/verless"><img src="https://circleci.com/gh/verless/verless.svg?style=shield"></a>
 
 <p>
 <br>
