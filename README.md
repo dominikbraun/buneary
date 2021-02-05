@@ -17,6 +17,16 @@ queues and publishing messages to exchanges.
 
 ---
 
+## Contents
+
+* [Installation](#installation)
+    * [macOS/Linux](#macoslinux)
+    * [Windows](#windows)
+    * [Docker](#docker)
+* [Usage](#usage)
+    * [Create an exchange](#create-an-exchange)
+    * [Create a queue](#create-a-queue)
+
 ## Installation
 
 ### macOS/Linux
