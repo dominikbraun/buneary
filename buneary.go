@@ -1,4 +1,4 @@
-package buneary
+package main
 
 import (
 	"fmt"

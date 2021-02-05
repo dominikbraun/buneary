@@ -1,4 +1,4 @@
-package buneary
+package main
 
 import "github.com/spf13/cobra"
 
@@ -9,8 +9,8 @@ type globalOptions struct {
 	password string
 }
 
-// RootCommand creates the top-level `buneary` command without any functionality.
-func RootCommand() *cobra.Command {
+// rootCommand creates the top-level `buneary` command without any functionality.
+func rootCommand() *cobra.Command {
 	var options globalOptions
 
 	root := &cobra.Command{
@@ -27,6 +27,7 @@ for managing exchanges, managing queues and publishing messages to exchanges.`,
 
 	root.AddCommand(createCommand(&options))
 	root.AddCommand(publishCommand(&options))
+	root.AddCommand(deleteCommand(&options))
 
 	root.PersistentFlags().
 		StringVarP(&options.user, "user", "u", "", "the username to connect with")
@@ -48,6 +49,7 @@ func createCommand(options *globalOptions) *cobra.Command {
 
 	create.AddCommand(createExchangeCommand(options))
 	create.AddCommand(createQueueCommand(options))
+	create.AddCommand(createBindingCommand(options))
 
 	return create
 }
