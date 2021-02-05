@@ -5,15 +5,15 @@
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-brightgreen"></a>
 </h1>
 
-`buneary`, pronounced _bun-ear-y_, is an easy-to-use RabbitMQ command line client for managing exchanges, managing
-queues and publishing messages to exchanges.
-
 <p>
 <br>
 <img src="logo.png" alt="buneary">
 <br>
 <br>
 </p>
+
+`buneary`, pronounced _bun-ear-y_, is an easy-to-use RabbitMQ command line client for managing exchanges, managing
+queues and publishing messages to exchanges.
 
 ---
 
