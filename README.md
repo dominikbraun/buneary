@@ -34,8 +34,8 @@ queues and publishing messages to exchanges.
     
 ## Example
 
-Publish a message `Hello!` to an exchange called `my-exchange`. The RabbitMQ server is running on the local machine,
-and we'll use a routing key called `my-routing-key` for the message.
+In the following example, a message `Hello!` is published and sent to an exchange called `my-exchange`. The RabbitMQ
+server is running on the local machine, and we'll use a routing key called `my-routing-key` for the message.
 
 ```
 $ buneary publish localhost my-exchange my-routing-key "Hello!"
