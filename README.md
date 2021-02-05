@@ -28,6 +28,8 @@ queues and publishing messages to exchanges.
     * [Create a queue](#create-a-queue)
     * [Create a binding](#create-a-binding)
     * [Publish a message](#publish-a-message)
+    * [Delete an exchange](#delete-an-exchange)
+    * [Delete a queue](#delete-a-queue)
 
 ## Installation
 
@@ -181,7 +183,8 @@ $ buneary publish <ADDRESS> <EXCHANGE> <ROUTING KEY> <BODY> [flags]
 
 **Example:**
 
-Publish a message `Hello!` to `my-exchange` on a RabbitMQ server running on the local machine.
+Publish a message `Hello!` to `my-exchange` on a RabbitMQ server running on the local machine. Note that message
+headers have not been implemented yet.
 
 ```
 $ buneary publish localhost my-exchange my-routing-key "Hello!"
@@ -189,4 +192,60 @@ $ buneary publish localhost my-exchange my-routing-key "Hello!"
 
 ### Delete an exchange
 
-...
+**Syntax:**
+
+```
+$ buneary delete exchange <ADDRESS> <NAME> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`NAME`|The name of the exchange to be deleted.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+
+**Example:**
+
+Delete an exchange called `my-exchange` on a RabbitMQ server running on the local machine.
+
+```
+$ buneary delete exchange localhost my-exchange
+```
+
+### Delete a queue
+
+**Syntax:**
+
+```
+$ buneary delete queue <ADDRESS> <NAME> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`NAME`|The name of the queue to be deleted.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+
+**Example:**
+
+Delete a queue called `my-queue` on a RabbitMQ server running on the local machine.
+
+```
+$ buneary delete queue localhost my-queue
+```
