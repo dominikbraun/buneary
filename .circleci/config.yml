@@ -73,24 +73,30 @@ jobs:
       - run:
           name: Build and pack buneary for Linux
           command: |
-            GOOS=linux GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
-              -o target/buneary cmd/main.go
+            GOOS=linux GOARCH=amd64 go build \
+              -v \
+              -ldflags "-X main.version=${CIRCLE_TAG}" \
+              -o target/buneary main.go
             cp target/buneary buneary
             tar -czf /tmp/artifacts/buneary-linux-amd64.tar.gz buneary
             rm buneary
       - run:
           name: Build and pack buneary for macOS
           command: |
-            GOOS=darwin GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
-              -o target/buneary cmd/main.go
+            GOOS=darwin GOARCH=amd64 go build \
+              -v \
+              -ldflags "-X main.version=${CIRCLE_TAG}" \
+              -o target/buneary main.go
             cp target/buneary buneary
-            tar -czf /tmp/artifacts/buneary-macos-amd64.tar.gz buneary
+            tar -czf /tmp/artifacts/buneary-darwin-amd64.tar.gz buneary
             rm buneary
       - run:
           name: Build and pack buneary for Windows
           command: |
-            GOOS=windows GOARCH=amd64 go build -v -ldflags "-X main.version=${CIRCLE_TAG}" \
-              -o target/buneary.exe cmd/main.go
+            GOOS=windows GOARCH=amd64 go build \
+              -v \
+              -ldflags "-X main.version=${CIRCLE_TAG}" \
+              -o target/buneary.exe main.go
             cp target/buneary.exe buneary.exe
             zip /tmp/artifacts/buneary-windows-amd64.zip buneary.exe
             rm buneary.exe
