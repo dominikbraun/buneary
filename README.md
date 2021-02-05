@@ -56,6 +56,14 @@ $ buneary create exchange <ADDRESS> <NAME> <TYPE>
 |`<NAME>`|`my-exchange`|The desired name for the exchange.|
 |`<TYPE>`|`direct`|The exchange type. Has to be one of `direct`, `headers`, `fanout` and `topic`.|
 
+**Flags:**
+
+|Flag|Short|Example|Description|
+|-|-|-|-|
+|`--user`|`-u`|`guest`|The username for authenticating against the RabbitMQ server. If no user is specified, you will be prompted to type it in.|
+|`--password`|`-p`|`guest`|The password for authenticating against the RabbitMQ server. If no password is specified, you will be prompted to type it in.|
+|`--auto-delete`|||Delete the exchange automatically once there are no queue bindings left.|
+
 ### Create a queue
 
 ...
