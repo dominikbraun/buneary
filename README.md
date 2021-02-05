@@ -1,6 +1,5 @@
 <p align="center">
 <br>
-<br>
 <img src="logo.png" alt="buneary">
 <br>
 <br>
