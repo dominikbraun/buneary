@@ -79,4 +79,33 @@ $ buneary create exchange localhost my-exchange direct
 
 ### Create a queue
 
-...
+**Syntax:**
+
+```
+$ buneary create queue <ADDRESS> <NAME> <TYPE> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`NAME`|The desired name of the new queue.|
+|`TYPE`|The queue type. Has to be one of `classic` and `quorum`.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+|`--auto-delete`||Automatically delete the queue once there are no consumers left.|
+|`--durable`||Make the queue persistent, surviving server restarts.|
+
+**Example:**
+
+Create a classic queue called `my-queue` on a RabbitMQ server running on the local machine.
+
+```
+$ buneary create queue localhost my-queue classic
+```
