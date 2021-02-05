@@ -45,8 +45,6 @@ $ docker container run dominikbraun/buneary version
 The following command creates a new exchange called `my-exchange` with type `direct` on a RabbitMQ server running on
 `localhost`.
 
-**Syntax:**
-
 ```
 $ buneary create exchange localhost my-exchange direct
 ```
