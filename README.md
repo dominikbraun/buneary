@@ -26,6 +26,8 @@ queues and publishing messages to exchanges.
 * [Usage](#usage)
     * [Create an exchange](#create-an-exchange)
     * [Create a queue](#create-a-queue)
+    * [Create a binding](#create-a-binding)
+    * [Publish a message](#publish-a-message)
 
 ## Installation
 
@@ -119,3 +121,72 @@ Create a classic queue called `my-queue` on a RabbitMQ server running on the loc
 ```
 $ buneary create queue localhost my-queue classic
 ```
+
+### Create a binding
+
+**Syntax:**
+
+```
+$ buneary create binding <ADDRESS> <NAME> <TARGET> <BINDING KEY> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`NAME`|The desired name of the new binding.|
+|`TARGET`|The name of the target queue or exchange. If it is an exchange, use `--to-exchange`.|
+|`BINDING KEY`|The binding key.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+|`--to-exchange`||Denote that the binding target is another exchange.|
+
+**Example:**
+
+Create a binding from `my-exchange` to `my-queue` on a RabbitMQ server running on the local machine.
+
+```
+$ buneary create binding localhost my-exchange my-queue my-binding-key
+```
+
+### Publish a message
+
+**Syntax:**
+
+```
+$ buneary publish <ADDRESS> <EXCHANGE> <ROUTING KEY> <BODY> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`EXCHANGE`|The name of the target exchange.|
+|`ROUTING KEY`|The routing key of the message.|
+|`BODY`|The actual message body.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+
+**Example:**
+
+Publish a message `Hello!` to `my-exchange` on a RabbitMQ server running on the local machine.
+
+```
+$ buneary publish localhost my-exchange my-routing-key "Hello!"
+```
+
+### Delete an exchange
+
+...
