@@ -9,7 +9,7 @@ RUN apk add --no-cache \
     curl \
     tar
 
-RUN curl -LO https://github.com/dominikbraun/buneary/releases/download/${VERSION}/verless-linux-amd64.tar.gz && \
+RUN curl -LO https://github.com/dominikbraun/buneary/releases/download/${VERSION}/buneary-linux-amd64.tar.gz && \
     tar -xvf buneary-linux-amd64.tar.gz -C /bin && \
     rm -f buneary-linux-amd64.tar.gz
 
