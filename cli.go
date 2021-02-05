@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -33,7 +34,6 @@ for managing exchanges, managing queues and publishing messages to exchanges.`,
 	root.AddCommand(createCommand(&options))
 	root.AddCommand(publishCommand(&options))
 	root.AddCommand(deleteCommand(&options))
-	root.AddCommand(versionCommand())
 
 	root.PersistentFlags().
 		StringVarP(&options.user, "user", "u", "", "the username to connect with")
