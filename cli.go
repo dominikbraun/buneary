@@ -1,6 +1,12 @@
 package main
 
-import "github.com/spf13/cobra"
+import (
+	"fmt"
+
+	"github.com/spf13/cobra"
+)
+
+var version = "UNDEFINED"
 
 // globalOptions defines global command line options available for all commands.
 // They're read by the top-level command and passed to the sub-command factories.
@@ -28,6 +34,7 @@ for managing exchanges, managing queues and publishing messages to exchanges.`,
 	root.AddCommand(createCommand(&options))
 	root.AddCommand(publishCommand(&options))
 	root.AddCommand(deleteCommand(&options))
+	root.AddCommand(versionCommand())
 
 	root.PersistentFlags().
 		StringVarP(&options.user, "user", "u", "", "the username to connect with")
@@ -431,4 +438,19 @@ func runDeleteQueue(options *globalOptions, args []string) error {
 	}
 
 	return nil
+}
+
+// versionCommand creates the `buneary version` command for printing release
+// information. This data is injected by the CI pipeline.
+func versionCommand() *cobra.Command {
+	version := &cobra.Command{
+		Use:   "version",
+		Short: "Print version information",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fmt.Printf("buneary %s", version)
+			return nil
+		},
+	}
+
+	return version
 }
