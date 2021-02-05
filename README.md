@@ -17,8 +17,6 @@ queues and publishing messages to exchanges.
 
 ---
 
-**Project status:** In active development
-
 ## Installation
 
 ### macOS/Linux
