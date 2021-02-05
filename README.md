@@ -31,6 +31,7 @@ queues and publishing messages to exchanges.
     * [Publish a message](#publish-a-message)
     * [Delete an exchange](#delete-an-exchange)
     * [Delete a queue](#delete-a-queue)
+* [Credits](#credits)
     
 ## Example
 
@@ -262,3 +263,9 @@ Delete a queue called `my-queue` on a RabbitMQ server running on the local machi
 ```
 $ buneary delete queue localhost my-queue
 ```
+
+### Credits
+
+* [streadway/amqp](https://github.com/streadway/amqp) is used as AMQP client library.
+* [spf13/cobra](https://github.com/spf13/cobra) is used as CLI library.
+* The Buneary graphic is made by [dirocha](https://imgbin.com/user/dirocha).
