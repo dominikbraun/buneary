@@ -246,7 +246,7 @@ func createBindingCommand(options *globalOptions) *cobra.Command {
 
 	createQueue := &cobra.Command{
 		Use:   "binding <ADDRESS> <NAME> <TARGET> <BINDING KEY>",
-		Short: "Create a new queue",
+		Short: "Create a new binding",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runCreateBinding(createBindingOptions, args)
