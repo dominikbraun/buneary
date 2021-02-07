@@ -30,6 +30,7 @@ func rootCommand() *cobra.Command {
 		Short: "An easy-to-use CLI client for RabbitMQ.",
 		Long: `buneary, pronounced bun-ear-y, is an easy-to-use RabbitMQ command line client
 for managing exchanges, managing queues and publishing messages to exchanges.`,
+		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -465,7 +466,7 @@ func versionCommand() *cobra.Command {
 		Use:   "version",
 		Short: "Print version information",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Printf("buneary %s", version)
+			fmt.Printf("buneary version %s", version)
 			return nil
 		},
 	}
