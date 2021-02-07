@@ -194,7 +194,7 @@ $ buneary publish <ADDRESS> <EXCHANGE> <ROUTING KEY> <BODY> [flags]
 |-|-|-|
 |`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
 |`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
-|`--headers`||Comma-separated message headers in the form `--headers key1=val1,key2=val2`|
+|`--headers`||Comma-separated message headers in the form `--headers key1=val1,key2=val2`.|
 
 **Example:**
 
