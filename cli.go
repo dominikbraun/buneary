@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -304,17 +305,30 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 	return nil
 }
 
+// publishOptions defines options for publishing a message.
+type publishOptions struct {
+	*globalOptions
+	headers string
+}
+
 // publishCommand creates the `buneary publish` command, making sure that exactly
 // four command arguments are passed.
 func publishCommand(options *globalOptions) *cobra.Command {
+	publishOptions := &publishOptions{
+		globalOptions: options,
+	}
+
 	publish := &cobra.Command{
 		Use:   "publish <ADDRESS> <EXCHANGE> <ROUTING KEY> <BODY>",
 		Short: "Publish a message to an exchange",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runPublish(options, args)
+			return runPublish(publishOptions, args)
 		},
 	}
+
+	publish.Flags().
+		StringVar(&publishOptions.headers, "headers", "", "headers as comma-separated key-value pairs")
 
 	return publish
 }
@@ -322,7 +336,7 @@ func publishCommand(options *globalOptions) *cobra.Command {
 // runPublish publishes a message by reading the command line data, setting the
 // configuration and calling the PublishMessage function. In case the password or
 // both the user and password aren't provided, it will go into interactive mode.
-func runPublish(options *globalOptions, args []string) error {
+func runPublish(options *publishOptions, args []string) error {
 	var (
 		address    = args[0]
 		exchange   = args[1]
@@ -330,7 +344,7 @@ func runPublish(options *globalOptions, args []string) error {
 		body       = args[3]
 	)
 
-	user, password := getOrReadInCredentials(options)
+	user, password := getOrReadInCredentials(options.globalOptions)
 
 	buneary := buneary{
 		config: &AMQPConfig{
@@ -342,8 +356,25 @@ func runPublish(options *globalOptions, args []string) error {
 
 	message := Message{
 		Target:     Exchange{Name: exchange},
+		Headers:    make(map[string]interface{}),
 		RoutingKey: routingKey,
 		Body:       []byte(body),
+	}
+
+	// Parse the message headers in the form key1=val1,key2=val2. If the headers
+	// do not adhere to this syntax, an error is returned. In case the same key
+	// exists multiple times, the last one wins.
+	for _, header := range strings.Split(options.headers, ",") {
+		tokens := strings.Split(strings.TrimSpace(header), "=")
+
+		if len(tokens) != 2 {
+			return errors.New("expected header in form key=value")
+		}
+
+		key := tokens[0]
+		value := tokens[1]
+
+		message.Headers[key] = value
 	}
 
 	if err := buneary.PublishMessage(message); err != nil {
