@@ -9,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -305,6 +306,179 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 	return nil
 }
 
+// getExchangesCommand creates the `buneary get exchanges` command, making sure that
+// exactly one argument is passed.
+func getExchangesCommand(options *globalOptions) *cobra.Command {
+	getExchanges := &cobra.Command{
+		Use:   "get exchanges <ADDRESS>",
+		Short: "Get all available exchanges",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runGetExchanges(options, args)
+		},
+	}
+
+	return getExchanges
+}
+
+// getExchange creates the `buneary get exchange` command, making sure that exactly
+// two arguments are passed.
+func getExchange(options *globalOptions) *cobra.Command {
+	getExchange := &cobra.Command{
+		Use:   "get exchange <ADDRESS> <NAME>",
+		Short: "Get a single exchange",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runGetExchanges(options, args)
+		},
+	}
+
+	return getExchange
+}
+
+// runGetExchanges either returns all exchanges or - if an exchange name has been
+// specified as second argument - a single exchange. In case the password or both
+// the user and password aren't provided, it will go into interactive mode.
+//
+// This flexibility allows runGetExchanges to be used by both `buneary get exchanges`
+// as well as `buneary get exchange`.
+func runGetExchanges(options *globalOptions, args []string) error {
+	var (
+		address = args[0]
+	)
+
+	user, password := getOrReadInCredentials(options)
+
+	buneary := buneary{
+		config: &AMQPConfig{
+			Address:  address,
+			User:     user,
+			Password: password,
+		},
+	}
+
+	// The default filter will let pass all exchanges regardless of their names.
+	filter := func(_ Exchange) bool {
+		return true
+	}
+
+	// However, if an exchange name has been specified as second argument, only
+	// that particular exchange should be returned.
+	if len(args) > 1 {
+		filter = func(exchange Exchange) bool {
+			return exchange.Name == args[1]
+		}
+	}
+
+	exchanges, err := buneary.GetExchanges(filter)
+	if err != nil {
+		return err
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Name", "Type", "Durable", "Auto-Delete", "Internal"})
+
+	for _, exchange := range exchanges {
+		row := make([]string, 5)
+		row[0] = exchange.Name
+		row[1] = string(exchange.Type)
+		row[2] = boolToString(exchange.Durable)
+		row[3] = boolToString(exchange.AutoDelete)
+		row[4] = boolToString(exchange.Internal)
+		table.Append(row)
+	}
+
+	table.Render()
+
+	return nil
+}
+
+// getQueuesCommand creates the `buneary get queues` command, making sure that
+// exactly one argument is passed.
+func getQueuesCommand(options *globalOptions) *cobra.Command {
+	getQueues := &cobra.Command{
+		Use:   "get queues <ADDRESS>",
+		Short: "Get all available queues",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+	}
+
+	return getQueues
+}
+
+// getQueueCommand creates the `buneary get queue` command, making sure that exactly two
+// arguments are passed.
+func getQueueCommand(options *globalOptions) *cobra.Command {
+	getQueue := &cobra.Command{
+		Use:   "get queue <ADDRESS> <NAME>",
+		Short: "Get a single queue",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+	}
+
+	return getQueue
+}
+
+// runGetQueues either returns all queues or - if a queue name has been specified as second
+// argument - a single queue. In case the password or both the user and password aren't
+// provided, it will go into interactive mode.
+//
+// This flexibility allows runGetQueues to be used by both `buneary get queues` as well as
+// `buneary get queue`.
+func runGetQueues(options *globalOptions, args []string) error {
+	var (
+		address = args[0]
+	)
+
+	user, password := getOrReadInCredentials(options)
+
+	buneary := buneary{
+		config: &AMQPConfig{
+			Address:  address,
+			User:     user,
+			Password: password,
+		},
+	}
+
+	// The default filter will let pass all queues regardless of their names.
+	filter := func(_ Queue) bool {
+		return true
+	}
+
+	// However, if a queue name has been specified as second argument, only that
+	// particular queue should be returned.
+	if len(args) > 1 {
+		filter = func(queue Queue) bool {
+			return queue.Name == args[1]
+		}
+	}
+
+	queues, err := buneary.GetQueues(filter)
+	if err != nil {
+		return err
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Name", "Type", "Durable", "Auto-Delete"})
+
+	for _, queue := range queues {
+		row := make([]string, 5)
+		row[0] = queue.Name
+		row[1] = string(queue.Type)
+		row[2] = boolToString(queue.Durable)
+		row[3] = boolToString(queue.AutoDelete)
+		table.Append(row)
+	}
+
+	table.Render()
+
+	return nil
+}
+
 // publishOptions defines options for publishing a message.
 type publishOptions struct {
 	*globalOptions
@@ -546,4 +720,12 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 	password = string(p)
 
 	return user, password
+}
+
+// boolToString returns "yes" if the given bool is true and "no" if it is false.
+func boolToString(source bool) string {
+	if source {
+		return "yes"
+	}
+	return "no"
 }
