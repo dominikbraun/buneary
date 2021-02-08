@@ -72,6 +72,14 @@ type Provider interface {
 	// target already exists, nothing will happen.
 	CreateBinding(binding Binding) error
 
+	// GetExchanges returns all exchanges that pass the provided filter function.
+	// To get all exchanges, pass a filter function that always returns true.
+	GetExchanges(filter func(exchange Exchange) bool) ([]Exchange, error)
+
+	// GetQueues returns all queue that pass the provided filter function. To get
+	// all queues, pass a filter function that always returns true.
+	GetQueues(filter func(queue Queue) bool) ([]Queue, error)
+
 	// PublishMessage publishes a message to the given exchange. The exchange
 	// has to exist or must be created before the message is published.
 	//
@@ -282,6 +290,16 @@ func (b *buneary) CreateBinding(binding Binding) error {
 	}
 
 	return nil
+}
+
+// GetExchanges returns exchanges passing the filter. See Provider.GetExchanges for details.
+func (b *buneary) GetExchanges(filter func(exchange Exchange) bool) ([]Exchange, error) {
+	return nil, nil
+}
+
+// GetQueues returns queues passing the filter. See Provider.GetQueues for details.
+func (b *buneary) GetQueues(filter func(queue Queue) bool) ([]Queue, error) {
+	return nil, nil
 }
 
 // PublishMessage publishes the given message. See Provider.PublishMessage for details.
