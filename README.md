@@ -459,6 +459,7 @@ $ buneary delete queue localhost my-queue
 
 ## Credits
 
+* [michaelklishin/rabbit-hole](https://github.com/michaelklishin/rabbit-hole) is used as RabbitMQ client library.
 * [streadway/amqp](https://github.com/streadway/amqp) is used as AMQP client library.
-* [spf13/cobra](https://github.com/spf13/cobra) is used as CLI library.
+* For all third-party packages used, see [go.mod](go.mod).
 * The Buneary graphic is made by [dirocha](https://imgbin.com/user/dirocha).
