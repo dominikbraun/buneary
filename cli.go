@@ -307,6 +307,7 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 	return nil
 }
 
+// getCommand creates the `buneary get` command without any functionality.
 func getCommand(options *globalOptions) *cobra.Command {
 	get := &cobra.Command{
 		Use:   "get <COMMAND>",
@@ -320,6 +321,8 @@ func getCommand(options *globalOptions) *cobra.Command {
 	get.AddCommand(getExchangeCommand(options))
 	get.AddCommand(getQueuesCommand(options))
 	get.AddCommand(getQueueCommand(options))
+	get.AddCommand(getBindingsCommand(options))
+	get.AddCommand(getBindingCommand(options))
 
 	return get
 }
@@ -488,6 +491,93 @@ func runGetQueues(options *globalOptions, args []string) error {
 		row[0] = queue.Name
 		row[1] = boolToString(queue.Durable)
 		row[2] = boolToString(queue.AutoDelete)
+		table.Append(row)
+	}
+
+	table.Render()
+
+	return nil
+}
+
+// getBindingsCommand creates the `buneary get bindings` command, making sure that
+// exactly one argument is passed.
+func getBindingsCommand(options *globalOptions) *cobra.Command {
+	getQueues := &cobra.Command{
+		Use:   "bindings <ADDRESS>",
+		Short: "Get all available bindings",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runGetBindings(options, args)
+		},
+	}
+
+	return getQueues
+}
+
+// getBindingCommand creates the `buneary get binding` command, making sure that exactly
+// three arguments are passed.
+func getBindingCommand(options *globalOptions) *cobra.Command {
+	getQueue := &cobra.Command{
+		Use:   "binding <ADDRESS> <EXCHANGE NAME> <TARGET NAME>",
+		Short: "Get a single binding",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runGetBindings(options, args)
+		},
+	}
+
+	return getQueue
+}
+
+// runGetBindings either returns all bindings  or - if a queue name has been specified as second
+// argument - a single binding. In case the password or both the user and password aren't
+// provided, it will go into interactive mode.
+//
+// This flexibility allows runGetBindings to be used by both `buneary get bindings` as well as
+// `buneary get binding`.
+func runGetBindings(options *globalOptions, args []string) error {
+	var (
+		address = args[0]
+	)
+
+	user, password := getOrReadInCredentials(options)
+
+	buneary := buneary{
+		config: &AMQPConfig{
+			Address:  address,
+			User:     user,
+			Password: password,
+		},
+	}
+
+	// The default filter will let pass all bindings regardless of their names.
+	filter := func(_ Binding) bool {
+		return true
+	}
+
+	// However, if a source exchange and a binding target have been specified as
+	// second argument, only that particular binding should be returned.
+	if len(args) > 2 {
+		filter = func(binding Binding) bool {
+			return binding.From.Name == args[1] &&
+				binding.TargetName == args[2]
+		}
+	}
+
+	bindings, err := buneary.GetBindings(filter)
+	if err != nil {
+		return err
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"From", "Target", "Type", "Binding Key"})
+
+	for _, binding := range bindings {
+		row := make([]string, 4)
+		row[0] = binding.From.Name
+		row[1] = binding.TargetName
+		row[2] = string(binding.Type)
+		row[3] = binding.Key
 		table.Append(row)
 	}
 

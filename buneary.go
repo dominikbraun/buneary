@@ -80,9 +80,13 @@ type Provider interface {
 	// To get all exchanges, pass a filter function that always returns true.
 	GetExchanges(filter func(exchange Exchange) bool) ([]Exchange, error)
 
-	// GetQueues returns all queue that pass the provided filter function. To get
+	// GetQueues returns all queues that pass the provided filter function. To get
 	// all queues, pass a filter function that always returns true.
 	GetQueues(filter func(queue Queue) bool) ([]Queue, error)
+
+	// GetBindings returns all bindings that pass the provided filter function. To
+	// get all bindings, pass a filter function that always returns true.
+	GetBindings(filter func(binding Binding) bool) ([]Binding, error)
 
 	// PublishMessage publishes a message to the given exchange. The exchange
 	// has to exist or must be created before the message is published.
@@ -383,6 +387,49 @@ func (b *buneary) GetQueues(filter func(queue Queue) bool) ([]Queue, error) {
 	}
 
 	return queues, nil
+}
+
+func (b *buneary) GetBindings(filter func(binding Binding) bool) ([]Binding, error) {
+	if b.client == nil {
+		tokens := strings.Split(b.config.Address, ":")
+		var port string
+
+		if len(tokens) == 2 {
+			port = tokens[1]
+		} else {
+			port = strconv.Itoa(apiDefaultPort)
+		}
+		url := fmt.Sprintf("http://%s:%s", tokens[0], port)
+
+		var err error
+
+		b.client, err = rabbithole.NewClient(url, b.config.User, b.config.Password)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	bindingInfos, err := b.client.ListBindings()
+	if err != nil {
+		return nil, err
+	}
+
+	var bindings []Binding
+
+	for _, info := range bindingInfos {
+		b := Binding{
+			Type:       BindingType(info.DestinationType),
+			From:       Exchange{Name: info.Source},
+			TargetName: info.Destination,
+			Key:        info.RoutingKey,
+		}
+
+		if filter(b) {
+			bindings = append(bindings, b)
+		}
+	}
+
+	return bindings, nil
 }
 
 // PublishMessage publishes the given message. See Provider.PublishMessage for details.
