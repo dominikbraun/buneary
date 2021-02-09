@@ -100,13 +100,12 @@ type Provider interface {
 	DeleteExchange(exchange Exchange) error
 
 	// DeleteQueue deletes the given queue from the server. Will return an error
-	// if the specified queue name doesn't exist. DeleteQueue purges all remaining
-	// messages and returns the number of purged messages.
-	DeleteQueue(queue Queue) (int, error)
+	// if the specified queue name doesn't exist.
+	DeleteQueue(queue Queue) error
 }
 
-// AMQPConfig stores AMQP-related configuration values.
-type AMQPConfig struct {
+// RabbitMQConfig stores RabbitMQ-related configuration values.
+type RabbitMQConfig struct {
 
 	// Address specifies the RabbitMQ address in the form `localhost:5672`. The
 	// port is not mandatory. If there's no port, 5672 will be used as default.
@@ -121,7 +120,7 @@ type AMQPConfig struct {
 
 // URI returns the AMQP URI for a configuration, prefixed with amqp://.
 // In case the RabbitMQ address lacks a port, the default port will be used.
-func (a *AMQPConfig) URI() string {
+func (a *RabbitMQConfig) URI() string {
 	tokens := strings.Split(a.Address, ":")
 	var port string
 
@@ -132,6 +131,23 @@ func (a *AMQPConfig) URI() string {
 	}
 
 	uri := fmt.Sprintf("amqp://%s:%s@%s:%s", a.User, a.Password, tokens[0], port)
+
+	return uri
+}
+
+// apiURI returns the URI for the RabbitMQ HTTP API, prefixed with http://. In case
+// the RabbitMQ server address lacks a port, the default port will be used.
+func (a *RabbitMQConfig) apiURI() string {
+	tokens := strings.Split(a.Address, ":")
+	var port string
+
+	if len(tokens) == 2 {
+		port = tokens[1]
+	} else {
+		port = strconv.Itoa(apiDefaultPort)
+	}
+
+	uri := fmt.Sprintf("http://%s:%s", tokens[0], port)
 
 	return uri
 }
@@ -233,16 +249,24 @@ type Message struct {
 	Body []byte
 }
 
+// NewProvider initializes and returns a default Provider instance.
+func NewProvider(config *RabbitMQConfig) Provider {
+	b := buneary{
+		config: config,
+	}
+	return &b
+}
+
 // buneary is an implementation of the Provider interface with sane defaults.
 type buneary struct {
+	config  *RabbitMQConfig
 	channel *amqp.Channel
-	config  *AMQPConfig
 	client  *rabbithole.Client
 }
 
-// setupConnection dials the configured RabbitMQ server, sets up a connection and opens
-// a channel from that connection, which should be closed once buneary has finished.
-func (b *buneary) setupConnection() error {
+// setupChannel dials the configured RabbitMQ server, sets up a connection and opens a
+// channel from that connection, which should be closed once buneary has finished.
+func (b *buneary) setupChannel() error {
 	if b.channel != nil {
 		if err := b.channel.Close(); err != nil {
 			return err
@@ -261,13 +285,30 @@ func (b *buneary) setupConnection() error {
 	return nil
 }
 
+// setupClient establishes a connection to the RabbitMQ HTTP API, initializing the
+// rabbit-hole client. It requires all connection data to exist in the configuration.
+func (b *buneary) setupClient() error {
+	client, err := rabbithole.NewClient(b.config.apiURI(), b.config.User, b.config.Password)
+	if err != nil {
+		return err
+	}
+	b.client = client
+
+	return nil
+}
+
 // CreateExchange creates the given exchange. See Provider.CreateExchange for details.
 func (b *buneary) CreateExchange(exchange Exchange) error {
-	if err := b.setupConnection(); err != nil {
+	if err := b.setupClient(); err != nil {
 		return err
 	}
 
-	if err := b.channel.ExchangeDeclare(exchangeArgs(exchange)); err != nil {
+	_, err := b.client.DeclareExchange("/", exchange.Name, rabbithole.ExchangeSettings{
+		Type:       string(exchange.Type),
+		Durable:    exchange.Durable,
+		AutoDelete: exchange.AutoDelete,
+	})
+	if err != nil {
 		return err
 	}
 
@@ -276,25 +317,37 @@ func (b *buneary) CreateExchange(exchange Exchange) error {
 
 // CreateQueue creates the given queue. See Provider.CreateQueue for details.
 func (b *buneary) CreateQueue(queue Queue) (string, error) {
-	if err := b.setupConnection(); err != nil {
+	if err := b.setupClient(); err != nil {
 		return "", err
 	}
 
-	q, err := b.channel.QueueDeclare(queueArgs(queue))
+	// ToDo: Fetch and return the generated queue name from the response.
+	_, err := b.client.DeclareQueue("/", queue.Name, rabbithole.QueueSettings{
+		Type:       string(queue.Type),
+		Durable:    queue.Durable,
+		AutoDelete: queue.AutoDelete,
+	})
 	if err != nil {
 		return "", err
 	}
 
-	return q.Name, nil
+	return "", nil
 }
 
 // CreateBinding creates the given binding. See Provider.CreateBinding for details.
 func (b *buneary) CreateBinding(binding Binding) error {
-	if err := b.setupConnection(); err != nil {
+	if err := b.setupClient(); err != nil {
 		return err
 	}
 
-	if err := b.channel.QueueBind(bindingArgs(binding)); err != nil {
+	_, err := b.client.DeclareBinding("/", rabbithole.BindingInfo{
+		Source:          binding.From.Name,
+		Vhost:           "/",
+		Destination:     binding.TargetName,
+		DestinationType: string(binding.Type),
+		RoutingKey:      binding.Key,
+	})
+	if err != nil {
 		return err
 	}
 
@@ -303,23 +356,8 @@ func (b *buneary) CreateBinding(binding Binding) error {
 
 // GetExchanges returns exchanges passing the filter. See Provider.GetExchanges for details.
 func (b *buneary) GetExchanges(filter func(exchange Exchange) bool) ([]Exchange, error) {
-	if b.client == nil {
-		tokens := strings.Split(b.config.Address, ":")
-		var port string
-
-		if len(tokens) == 2 {
-			port = tokens[1]
-		} else {
-			port = strconv.Itoa(apiDefaultPort)
-		}
-		url := fmt.Sprintf("http://%s:%s", tokens[0], port)
-
-		var err error
-
-		b.client, err = rabbithole.NewClient(url, b.config.User, b.config.Password)
-		if err != nil {
-			return nil, err
-		}
+	if err := b.setupClient(); err != nil {
+		return nil, err
 	}
 
 	exchangeInfos, err := b.client.ListExchanges()
@@ -348,23 +386,8 @@ func (b *buneary) GetExchanges(filter func(exchange Exchange) bool) ([]Exchange,
 
 // GetQueues returns queues passing the filter. See Provider.GetQueues for details.
 func (b *buneary) GetQueues(filter func(queue Queue) bool) ([]Queue, error) {
-	if b.client == nil {
-		tokens := strings.Split(b.config.Address, ":")
-		var port string
-
-		if len(tokens) == 2 {
-			port = tokens[1]
-		} else {
-			port = strconv.Itoa(apiDefaultPort)
-		}
-		url := fmt.Sprintf("http://%s:%s", tokens[0], port)
-
-		var err error
-
-		b.client, err = rabbithole.NewClient(url, b.config.User, b.config.Password)
-		if err != nil {
-			return nil, err
-		}
+	if err := b.setupClient(); err != nil {
+		return nil, err
 	}
 
 	queueInfos, err := b.client.ListQueues()
@@ -390,23 +413,8 @@ func (b *buneary) GetQueues(filter func(queue Queue) bool) ([]Queue, error) {
 }
 
 func (b *buneary) GetBindings(filter func(binding Binding) bool) ([]Binding, error) {
-	if b.client == nil {
-		tokens := strings.Split(b.config.Address, ":")
-		var port string
-
-		if len(tokens) == 2 {
-			port = tokens[1]
-		} else {
-			port = strconv.Itoa(apiDefaultPort)
-		}
-		url := fmt.Sprintf("http://%s:%s", tokens[0], port)
-
-		var err error
-
-		b.client, err = rabbithole.NewClient(url, b.config.User, b.config.Password)
-		if err != nil {
-			return nil, err
-		}
+	if err := b.setupClient(); err != nil {
+		return nil, err
 	}
 
 	bindingInfos, err := b.client.ListBindings()
@@ -434,9 +442,13 @@ func (b *buneary) GetBindings(filter func(binding Binding) bool) ([]Binding, err
 
 // PublishMessage publishes the given message. See Provider.PublishMessage for details.
 func (b *buneary) PublishMessage(message Message) error {
-	if err := b.setupConnection(); err != nil {
+	if err := b.setupChannel(); err != nil {
 		return err
 	}
+
+	defer func() {
+		_ = b.Close()
+	}()
 
 	if err := b.channel.Publish(messageArgs(message)); err != nil {
 		return err
@@ -447,11 +459,12 @@ func (b *buneary) PublishMessage(message Message) error {
 
 // DeleteExchange deletes the given exchange. See Provider.DeleteExchange for details.
 func (b *buneary) DeleteExchange(exchange Exchange) error {
-	if err := b.setupConnection(); err != nil {
+	if err := b.setupClient(); err != nil {
 		return err
 	}
 
-	if err := b.channel.ExchangeDelete(exchange.Name, false, false); err != nil {
+	_, err := b.client.DeleteExchange("/", exchange.Name)
+	if err != nil {
 		return err
 	}
 
@@ -459,23 +472,29 @@ func (b *buneary) DeleteExchange(exchange Exchange) error {
 }
 
 // DeleteQueue deletes the given exchange. See Provider.DeleteQueue for details.
-func (b *buneary) DeleteQueue(queue Queue) (int, error) {
-	if err := b.setupConnection(); err != nil {
-		return 0, err
+func (b *buneary) DeleteQueue(queue Queue) error {
+	if err := b.setupClient(); err != nil {
+		return err
 	}
 
-	purged, err := b.channel.QueueDelete(queue.Name, false, false, false)
+	_, err := b.client.DeleteQueue("/", queue.Name)
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	return purged, nil
+	return nil
 }
 
 // Close closes the AMQP channel to the configured RabbitMQ server. This function
-// should be called after each operation defined by the Provider interface.
+// should be called after running PublishMessage.
 func (b *buneary) Close() error {
-	return b.channel.Close()
+	if b.channel != nil {
+		if err := b.channel.Close(); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // exchangeArgs returns all exchange fields expected by the AMQP library as single

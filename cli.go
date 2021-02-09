@@ -122,13 +122,11 @@ func runCreateExchange(options *createExchangeOptions, args []string) error {
 
 	user, password := getOrReadInCredentials(options.globalOptions)
 
-	buneary := buneary{
-		config: &AMQPConfig{
-			Address:  address,
-			User:     user,
-			Password: password,
-		},
-	}
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
 
 	exchange := Exchange{
 		Name:       name,
@@ -149,7 +147,7 @@ func runCreateExchange(options *createExchangeOptions, args []string) error {
 		exchange.Type = Topic
 	}
 
-	if err := buneary.CreateExchange(exchange); err != nil {
+	if err := provider.CreateExchange(exchange); err != nil {
 		return err
 	}
 
@@ -204,13 +202,11 @@ func runCreateQueue(options *createQueueOptions, args []string) error {
 
 	user, password := getOrReadInCredentials(options.globalOptions)
 
-	buneary := buneary{
-		config: &AMQPConfig{
-			Address:  address,
-			User:     user,
-			Password: password,
-		},
-	}
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
 
 	queue := Queue{
 		Name:       name,
@@ -227,7 +223,7 @@ func runCreateQueue(options *createQueueOptions, args []string) error {
 		queue.Type = Classic
 	}
 
-	_, err := buneary.CreateQueue(queue)
+	_, err := provider.CreateQueue(queue)
 	if err != nil {
 		return err
 	}
@@ -279,13 +275,11 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 
 	user, password := getOrReadInCredentials(options.globalOptions)
 
-	buneary := buneary{
-		config: &AMQPConfig{
-			Address:  address,
-			User:     user,
-			Password: password,
-		},
-	}
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
 
 	binding := Binding{
 		From:       Exchange{Name: name},
@@ -300,7 +294,7 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 		binding.Type = ToQueue
 	}
 
-	if err := buneary.CreateBinding(binding); err != nil {
+	if err := provider.CreateBinding(binding); err != nil {
 		return err
 	}
 
@@ -370,13 +364,11 @@ func runGetExchanges(options *globalOptions, args []string) error {
 
 	user, password := getOrReadInCredentials(options)
 
-	buneary := buneary{
-		config: &AMQPConfig{
-			Address:  address,
-			User:     user,
-			Password: password,
-		},
-	}
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
 
 	// The default filter will let pass all exchanges regardless of their names.
 	filter := func(_ Exchange) bool {
@@ -391,7 +383,7 @@ func runGetExchanges(options *globalOptions, args []string) error {
 		}
 	}
 
-	exchanges, err := buneary.GetExchanges(filter)
+	exchanges, err := provider.GetExchanges(filter)
 	if err != nil {
 		return err
 	}
@@ -457,13 +449,11 @@ func runGetQueues(options *globalOptions, args []string) error {
 
 	user, password := getOrReadInCredentials(options)
 
-	buneary := buneary{
-		config: &AMQPConfig{
-			Address:  address,
-			User:     user,
-			Password: password,
-		},
-	}
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
 
 	// The default filter will let pass all queues regardless of their names.
 	filter := func(_ Queue) bool {
@@ -478,7 +468,7 @@ func runGetQueues(options *globalOptions, args []string) error {
 		}
 	}
 
-	queues, err := buneary.GetQueues(filter)
+	queues, err := provider.GetQueues(filter)
 	if err != nil {
 		return err
 	}
@@ -542,13 +532,11 @@ func runGetBindings(options *globalOptions, args []string) error {
 
 	user, password := getOrReadInCredentials(options)
 
-	buneary := buneary{
-		config: &AMQPConfig{
-			Address:  address,
-			User:     user,
-			Password: password,
-		},
-	}
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
 
 	// The default filter will let pass all bindings regardless of their names.
 	filter := func(_ Binding) bool {
@@ -564,7 +552,7 @@ func runGetBindings(options *globalOptions, args []string) error {
 		}
 	}
 
-	bindings, err := buneary.GetBindings(filter)
+	bindings, err := provider.GetBindings(filter)
 	if err != nil {
 		return err
 	}
@@ -627,13 +615,11 @@ func runPublish(options *publishOptions, args []string) error {
 
 	user, password := getOrReadInCredentials(options.globalOptions)
 
-	buneary := buneary{
-		config: &AMQPConfig{
-			Address:  address,
-			User:     user,
-			Password: password,
-		},
-	}
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
 
 	message := Message{
 		Target:     Exchange{Name: exchange},
@@ -658,7 +644,7 @@ func runPublish(options *publishOptions, args []string) error {
 		message.Headers[key] = value
 	}
 
-	if err := buneary.PublishMessage(message); err != nil {
+	if err := provider.PublishMessage(message); err != nil {
 		return err
 	}
 
@@ -707,19 +693,17 @@ func runDeleteExchange(options *globalOptions, args []string) error {
 
 	user, password := getOrReadInCredentials(options)
 
-	buneary := buneary{
-		config: &AMQPConfig{
-			Address:  address,
-			User:     user,
-			Password: password,
-		},
-	}
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
 
 	exchange := Exchange{
 		Name: name,
 	}
 
-	if err := buneary.DeleteExchange(exchange); err != nil {
+	if err := provider.DeleteExchange(exchange); err != nil {
 		return err
 	}
 
@@ -751,20 +735,17 @@ func runDeleteQueue(options *globalOptions, args []string) error {
 
 	user, password := getOrReadInCredentials(options)
 
-	buneary := buneary{
-		config: &AMQPConfig{
-			Address:  address,
-			User:     user,
-			Password: password,
-		},
-	}
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
 
 	queue := Queue{
 		Name: name,
 	}
 
-	_, err := buneary.DeleteQueue(queue)
-	if err != nil {
+	if err := provider.DeleteQueue(queue); err != nil {
 		return err
 	}
 
