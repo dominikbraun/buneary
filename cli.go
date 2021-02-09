@@ -509,7 +509,7 @@ func getBindingsCommand(options *globalOptions) *cobra.Command {
 func getBindingCommand(options *globalOptions) *cobra.Command {
 	getQueue := &cobra.Command{
 		Use:   "binding <ADDRESS> <EXCHANGE NAME> <TARGET NAME>",
-		Short: "Get a single binding",
+		Short: "Get the binding or bindings between two resources",
 		Args:  cobra.ExactArgs(3),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGetBindings(options, args)
