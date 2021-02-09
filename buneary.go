@@ -497,43 +497,6 @@ func (b *buneary) Close() error {
 	return nil
 }
 
-// exchangeArgs returns all exchange fields expected by the AMQP library as single
-// values. This avoids large parameter lists when calling library function.
-func exchangeArgs(exchange Exchange) (string, string, bool, bool, bool, bool, amqp.Table) {
-	return exchange.Name,
-		string(exchange.Type),
-		exchange.Durable,
-		exchange.AutoDelete,
-		exchange.Internal,
-		exchange.NoWait,
-		amqp.Table{}
-}
-
-// queueArgs returns all queue fields expected by the AMQP library as single values.
-// This avoids large parameter lists when calling library functions.
-//
-// ToDo: Store key-value arguments in the queue and provide them from there.
-func queueArgs(queue Queue) (string, bool, bool, bool, bool, amqp.Table) {
-	return queue.Name,
-		queue.Durable,
-		queue.AutoDelete,
-		false,
-		false,
-		amqp.Table{}
-}
-
-// bindingArgs returns all binding fields expected by the AMQP library as single
-// values. This avoids large parameter lists when calling library functions.
-//
-// ToDo: Store key-value arguments in the binding and provide them from there.
-func bindingArgs(binding Binding) (string, string, string, bool, amqp.Table) {
-	return binding.TargetName,
-		binding.Key,
-		binding.From.Name,
-		false,
-		amqp.Table{}
-}
-
 // messageArgs returns all message fields expected by the AMQP library as single
 // values. This avoids large parameter lists when calling library functions.
 func messageArgs(message Message) (string, string, bool, bool, amqp.Publishing) {
