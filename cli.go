@@ -419,7 +419,7 @@ func getQueuesCommand(options *globalOptions) *cobra.Command {
 		Short: "Get all available queues",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
+			return runGetQueues(options, args)
 		},
 	}
 
@@ -434,7 +434,7 @@ func getQueueCommand(options *globalOptions) *cobra.Command {
 		Short: "Get a single queue",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
+			return runGetQueues(options, args)
 		},
 	}
 
@@ -481,14 +481,13 @@ func runGetQueues(options *globalOptions, args []string) error {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Name", "Type", "Durable", "Auto-Delete"})
+	table.SetHeader([]string{"Name", "Durable", "Auto-Delete"})
 
 	for _, queue := range queues {
-		row := make([]string, 5)
+		row := make([]string, 3)
 		row[0] = queue.Name
-		row[1] = string(queue.Type)
-		row[2] = boolToString(queue.Durable)
-		row[3] = boolToString(queue.AutoDelete)
+		row[1] = boolToString(queue.Durable)
+		row[2] = boolToString(queue.AutoDelete)
 		table.Append(row)
 	}
 

@@ -344,7 +344,45 @@ func (b *buneary) GetExchanges(filter func(exchange Exchange) bool) ([]Exchange,
 
 // GetQueues returns queues passing the filter. See Provider.GetQueues for details.
 func (b *buneary) GetQueues(filter func(queue Queue) bool) ([]Queue, error) {
-	return nil, nil
+	if b.client == nil {
+		tokens := strings.Split(b.config.Address, ":")
+		var port string
+
+		if len(tokens) == 2 {
+			port = tokens[1]
+		} else {
+			port = strconv.Itoa(apiDefaultPort)
+		}
+		url := fmt.Sprintf("http://%s:%s", tokens[0], port)
+
+		var err error
+
+		b.client, err = rabbithole.NewClient(url, b.config.User, b.config.Password)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	queueInfos, err := b.client.ListQueues()
+	if err != nil {
+		return nil, err
+	}
+
+	var queues []Queue
+
+	for _, info := range queueInfos {
+		q := Queue{
+			Name:       info.Name,
+			Durable:    info.Durable,
+			AutoDelete: info.AutoDelete,
+		}
+
+		if filter(q) {
+			queues = append(queues, q)
+		}
+	}
+
+	return queues, nil
 }
 
 // PublishMessage publishes the given message. See Provider.PublishMessage for details.
