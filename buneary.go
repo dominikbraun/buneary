@@ -6,10 +6,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/michaelklishin/rabbit-hole/v2"
 	"github.com/streadway/amqp"
 )
 
-const amqpDefaultPort = 5672
+const (
+	amqpDefaultPort = 5672
+	apiDefaultPort  = 8081
+)
 
 type (
 	// ExchangeType represents the type of an exchange and thus defines its routing
@@ -229,6 +233,7 @@ type Message struct {
 type buneary struct {
 	channel *amqp.Channel
 	config  *AMQPConfig
+	client  *rabbithole.Client
 }
 
 // setupConnection dials the configured RabbitMQ server, sets up a connection and opens
@@ -294,7 +299,47 @@ func (b *buneary) CreateBinding(binding Binding) error {
 
 // GetExchanges returns exchanges passing the filter. See Provider.GetExchanges for details.
 func (b *buneary) GetExchanges(filter func(exchange Exchange) bool) ([]Exchange, error) {
-	return nil, nil
+	if b.client == nil {
+		tokens := strings.Split(b.config.Address, ":")
+		var port string
+
+		if len(tokens) == 2 {
+			port = tokens[1]
+		} else {
+			port = strconv.Itoa(apiDefaultPort)
+		}
+		url := fmt.Sprintf("http://%s:%s", tokens[0], port)
+
+		var err error
+
+		b.client, err = rabbithole.NewClient(url, b.config.User, b.config.Password)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	exchangeInfos, err := b.client.ListExchanges()
+	if err != nil {
+		return nil, err
+	}
+
+	var exchanges []Exchange
+
+	for _, info := range exchangeInfos {
+		e := Exchange{
+			Name:       info.Name,
+			Type:       ExchangeType(info.Type),
+			Durable:    info.Durable,
+			AutoDelete: info.AutoDelete,
+			Internal:   info.Internal,
+		}
+
+		if filter(e) {
+			exchanges = append(exchanges, e)
+		}
+	}
+
+	return exchanges, nil
 }
 
 // GetQueues returns queues passing the filter. See Provider.GetQueues for details.

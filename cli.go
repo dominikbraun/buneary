@@ -41,6 +41,7 @@ for managing exchanges, managing queues and publishing messages to exchanges.`,
 	}
 
 	root.AddCommand(createCommand(&options))
+	root.AddCommand(getCommand(&options))
 	root.AddCommand(publishCommand(&options))
 	root.AddCommand(deleteCommand(&options))
 	root.AddCommand(versionCommand())
@@ -306,11 +307,28 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 	return nil
 }
 
+func getCommand(options *globalOptions) *cobra.Command {
+	get := &cobra.Command{
+		Use:   "get <COMMAND>",
+		Short: "Create a resource",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return nil
+		},
+	}
+
+	get.AddCommand(getExchangesCommand(options))
+	get.AddCommand(getExchangeCommand(options))
+	get.AddCommand(getQueuesCommand(options))
+	get.AddCommand(getQueueCommand(options))
+
+	return get
+}
+
 // getExchangesCommand creates the `buneary get exchanges` command, making sure that
 // exactly one argument is passed.
 func getExchangesCommand(options *globalOptions) *cobra.Command {
 	getExchanges := &cobra.Command{
-		Use:   "get exchanges <ADDRESS>",
+		Use:   "exchanges <ADDRESS>",
 		Short: "Get all available exchanges",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -321,11 +339,11 @@ func getExchangesCommand(options *globalOptions) *cobra.Command {
 	return getExchanges
 }
 
-// getExchange creates the `buneary get exchange` command, making sure that exactly
+// getExchangeCommand creates the `buneary get exchange` command, making sure that exactly
 // two arguments are passed.
-func getExchange(options *globalOptions) *cobra.Command {
+func getExchangeCommand(options *globalOptions) *cobra.Command {
 	getExchange := &cobra.Command{
-		Use:   "get exchange <ADDRESS> <NAME>",
+		Use:   "exchange <ADDRESS> <NAME>",
 		Short: "Get a single exchange",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -397,7 +415,7 @@ func runGetExchanges(options *globalOptions, args []string) error {
 // exactly one argument is passed.
 func getQueuesCommand(options *globalOptions) *cobra.Command {
 	getQueues := &cobra.Command{
-		Use:   "get queues <ADDRESS>",
+		Use:   "queues <ADDRESS>",
 		Short: "Get all available queues",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -412,7 +430,7 @@ func getQueuesCommand(options *globalOptions) *cobra.Command {
 // arguments are passed.
 func getQueueCommand(options *globalOptions) *cobra.Command {
 	getQueue := &cobra.Command{
-		Use:   "get queue <ADDRESS> <NAME>",
+		Use:   "queue <ADDRESS> <NAME>",
 		Short: "Get a single queue",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -716,6 +734,8 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 		fmt.Println("error reading password from stdin")
 		os.Exit(1)
 	}
+
+	_, _ = os.Stdout.Write([]byte{'\n'})
 
 	password = string(p)
 
