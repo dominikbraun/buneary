@@ -83,7 +83,7 @@ $ buneary create exchange <ADDRESS> <NAME> <TYPE> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The desired name of the new exchange.|
 |`TYPE`|The exchange type. Has to be one of `direct`, `headers`, `fanout` and `topic`.|
 
@@ -117,7 +117,7 @@ $ buneary create queue <ADDRESS> <NAME> <TYPE> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The desired name of the new queue.|
 |`TYPE`|The queue type. Has to be one of `classic` and `quorum`.|
 
@@ -150,7 +150,7 @@ $ buneary create binding <ADDRESS> <NAME> <TARGET> <BINDING KEY> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The desired name of the new binding.|
 |`TARGET`|The name of the target queue or exchange. If it is an exchange, use `--to-exchange`.|
 |`BINDING KEY`|The binding key.|
@@ -183,7 +183,7 @@ $ buneary publish <ADDRESS> <EXCHANGE> <ROUTING KEY> <BODY> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ AMQP address. If no port is specified, `5672` is used.|
 |`EXCHANGE`|The name of the target exchange.|
 |`ROUTING KEY`|The routing key of the message.|
 |`BODY`|The actual message body.|
@@ -217,7 +217,7 @@ $ buneary delete exchange <ADDRESS> <NAME> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The name of the exchange to be deleted.|
 
 **Flags:**
@@ -247,7 +247,7 @@ $ buneary delete queue <ADDRESS> <NAME> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The name of the queue to be deleted.|
 
 **Flags:**

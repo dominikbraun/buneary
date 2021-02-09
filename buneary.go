@@ -12,7 +12,7 @@ import (
 
 const (
 	amqpDefaultPort = 5672
-	apiDefaultPort  = 8081
+	apiDefaultPort  = 15672
 )
 
 type (
