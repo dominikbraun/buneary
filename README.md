@@ -28,6 +28,12 @@ queues and publishing messages to exchanges.
     * [Create an exchange](#create-an-exchange)
     * [Create a queue](#create-a-queue)
     * [Create a binding](#create-a-binding)
+    * [Get all exchanges](#get-all-exchanges)
+    * [Get an exchange](#get-an-exchange)
+    * [Get all queues](#get-all-queues)
+    * [Get a queue](#get-a-queue)
+    * [Get all bindings](#get-all-bindings)
+    * [Get a binding](#get-a-binding)
     * [Publish a message](#publish-a-message)
     * [Delete an exchange](#delete-an-exchange)
     * [Delete a queue](#delete-a-queue)
@@ -83,7 +89,7 @@ $ buneary create exchange <ADDRESS> <NAME> <TYPE> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The desired name of the new exchange.|
 |`TYPE`|The exchange type. Has to be one of `direct`, `headers`, `fanout` and `topic`.|
 
@@ -117,7 +123,7 @@ $ buneary create queue <ADDRESS> <NAME> <TYPE> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The desired name of the new queue.|
 |`TYPE`|The queue type. Has to be one of `classic` and `quorum`.|
 
@@ -150,7 +156,7 @@ $ buneary create binding <ADDRESS> <NAME> <TARGET> <BINDING KEY> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The desired name of the new binding.|
 |`TARGET`|The name of the target queue or exchange. If it is an exchange, use `--to-exchange`.|
 |`BINDING KEY`|The binding key.|
@@ -171,6 +177,198 @@ Create a binding from `my-exchange` to `my-queue` on a RabbitMQ server running o
 $ buneary create binding localhost my-exchange my-queue my-binding-key
 ```
 
+### Get all exchanges
+
+**Syntax:**
+
+```
+$ buneary get exchanges <ADDRESS> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+
+**Example:**
+
+Get all exchanges from a RabbitMQ server running on the local machine - this particular example also shows the output.
+
+```
+$ buneary get exchanges localhost
+User: guest
+Password:
++--------------------+---------+---------+-------------+----------+
+|        NAME        |  TYPE   | DURABLE | AUTO-DELETE | INTERNAL |
++--------------------+---------+---------+-------------+----------+
+|                    | direct  | yes     | no          | no       |
+| amq.direct         | direct  | yes     | no          | no       |
+| amq.fanout         | fanout  | yes     | no          | no       |
+| amq.headers        | headers | yes     | no          | no       |
+| amq.match          | headers | yes     | no          | no       |
+| amq.rabbitmq.trace | topic   | yes     | no          | yes      |
+| amq.topic          | topic   | yes     | no          | no       |
++--------------------+---------+---------+-------------+----------+
+
+```
+
+### Get an exchange
+
+**Syntax:**
+
+```
+$ buneary get exchange <ADDRESS> <NAME> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
+|`NAME`|The name of the exchange.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+
+**Example:**
+
+Get an exchange called `my-exchange` from a RabbitMQ server running on the local machine.
+
+```
+$ buneary get exchange localhost my-exchange
+```
+
+### Get all queues
+
+**Syntax:**
+
+```
+$ buneary get queues <ADDRESS> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+
+**Example:**
+
+Get all queues from a RabbitMQ server running on the local machine.
+
+```
+$ buneary get queues localhost
+```
+
+### Get a queue
+
+**Syntax:**
+
+```
+$ buneary get queue <ADDRESS> <NAME> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
+|`NAME`|The name of the queue.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+
+**Example:**
+
+Get a queue called `my-queue` from a RabbitMQ server running on the local machine.
+
+```
+$ buneary get queue localhost my-exchange
+```
+
+### Get all bindings
+
+**Syntax:**
+
+```
+$ buneary get bindings <ADDRESS> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+
+**Example:**
+
+Get all bindings from a RabbitMQ server running on the local machine.
+
+```
+$ buneary get bindings localhost
+```
+
+### Get a binding
+
+**Syntax:**
+
+```
+$ buneary get binding <ADDRESS> <EXCHANGE NAME> <TARGET NAME> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
+|`EXCHANGE NAME`|The name of the source exchange.|
+|`TARGET NAME`|The name of the target.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+
+**Example:**
+
+Get the binding or bindings between `my-exchange` and `my-queue` from a RabbitMQ server running on the local machine.
+
+```
+$ buneary get binding localhost my-exchange my-queue
+```
+
 ### Publish a message
 
 **Syntax:**
@@ -183,7 +381,7 @@ $ buneary publish <ADDRESS> <EXCHANGE> <ROUTING KEY> <BODY> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ AMQP address. If no port is specified, `5672` is used.|
 |`EXCHANGE`|The name of the target exchange.|
 |`ROUTING KEY`|The routing key of the message.|
 |`BODY`|The actual message body.|
@@ -198,8 +396,7 @@ $ buneary publish <ADDRESS> <EXCHANGE> <ROUTING KEY> <BODY> [flags]
 
 **Example:**
 
-Publish a message `Hello!` to `my-exchange` on a RabbitMQ server running on the local machine. Note that message
-headers have not been implemented yet.
+Publish a message `Hello!` to `my-exchange` on a RabbitMQ server running on the local machine.
 
 ```
 $ buneary publish localhost my-exchange my-routing-key "Hello!"
@@ -217,7 +414,7 @@ $ buneary delete exchange <ADDRESS> <NAME> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The name of the exchange to be deleted.|
 
 **Flags:**
@@ -247,7 +444,7 @@ $ buneary delete queue <ADDRESS> <NAME> [flags]
 
 |Argument|Description|
 |-|-|
-|`ADDRESS`|The RabbitMQ server address. If no port is specified, `5672` is used.|
+|`ADDRESS`|The RabbitMQ HTTP API address. If no port is specified, `15672` is used.|
 |`NAME`|The name of the queue to be deleted.|
 
 **Flags:**
@@ -267,6 +464,7 @@ $ buneary delete queue localhost my-queue
 
 ## Credits
 
+* [michaelklishin/rabbit-hole](https://github.com/michaelklishin/rabbit-hole) is used as RabbitMQ client library.
 * [streadway/amqp](https://github.com/streadway/amqp) is used as AMQP client library.
-* [spf13/cobra](https://github.com/spf13/cobra) is used as CLI library.
+* For all third-party packages used, see [go.mod](go.mod).
 * The Buneary graphic is made by [dirocha](https://imgbin.com/user/dirocha).
