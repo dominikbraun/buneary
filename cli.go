@@ -628,20 +628,22 @@ func runPublish(options *publishOptions, args []string) error {
 		Body:       []byte(body),
 	}
 
-	// Parse the message headers in the form key1=val1,key2=val2. If the headers
-	// do not adhere to this syntax, an error is returned. In case the same key
-	// exists multiple times, the last one wins.
-	for _, header := range strings.Split(options.headers, ",") {
-		tokens := strings.Split(strings.TrimSpace(header), "=")
+	if options.headers != "" {
+		// Parse the message headers in the form key1=val1,key2=val2. If the headers
+		// do not adhere to this syntax, an error is returned. In case the same key
+		// exists multiple times, the last one wins.
+		for _, header := range strings.Split(options.headers, ",") {
+			tokens := strings.Split(strings.TrimSpace(header), "=")
 
-		if len(tokens) != 2 {
-			return errors.New("expected header in form key=value")
+			if len(tokens) != 2 {
+				return errors.New("expected header in form key=value")
+			}
+
+			key := tokens[0]
+			value := tokens[1]
+
+			message.Headers[key] = value
 		}
-
-		key := tokens[0]
-		value := tokens[1]
-
-		message.Headers[key] = value
 	}
 
 	if err := provider.PublishMessage(message); err != nil {
