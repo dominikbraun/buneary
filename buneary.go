@@ -412,6 +412,7 @@ func (b *buneary) GetQueues(filter func(queue Queue) bool) ([]Queue, error) {
 	return queues, nil
 }
 
+// GetBindings returns bindings passing the filter. See Provider.GetBindings for details.
 func (b *buneary) GetBindings(filter func(binding Binding) bool) ([]Binding, error) {
 	if err := b.setupClient(); err != nil {
 		return nil, err
