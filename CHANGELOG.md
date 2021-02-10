@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2021-02-10
+
+### Added
+- Add the `buneary get exchanges` command.
+- Add the `buneary get exchange` command.
+- Add the `buneary get queues` command.
+- Add the `buneary get queue` command.
+- Add the `buneary get bindings` command.
+- Add the `buneary get binding` command.
+- Add the `--headers` option for specifying message headers.
+
+### Changed
+- Use the HTTP API port `15672` instead of the AMQP port `5672`.
+
 ## [0.1.1] - 2021-02-07
 
 ### Changed
