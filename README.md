@@ -396,8 +396,7 @@ $ buneary publish <ADDRESS> <EXCHANGE> <ROUTING KEY> <BODY> [flags]
 
 **Example:**
 
-Publish a message `Hello!` to `my-exchange` on a RabbitMQ server running on the local machine. Note that message
-headers have not been implemented yet.
+Publish a message `Hello!` to `my-exchange` on a RabbitMQ server running on the local machine.
 
 ```
 $ buneary publish localhost my-exchange my-routing-key "Hello!"
