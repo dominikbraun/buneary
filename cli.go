@@ -60,7 +60,7 @@ func createCommand(options *globalOptions) *cobra.Command {
 		Use:   "create <COMMAND>",
 		Short: "Create a resource",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
+			return cmd.Help()
 		},
 	}
 
@@ -307,7 +307,7 @@ func getCommand(options *globalOptions) *cobra.Command {
 		Use:   "get <COMMAND>",
 		Short: "Create a resource",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
+			return cmd.Help()
 		},
 	}
 
@@ -659,7 +659,7 @@ func deleteCommand(options *globalOptions) *cobra.Command {
 		Use:   "delete <COMMAND>",
 		Short: "Delete a resource",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
+			return cmd.Help()
 		},
 	}
 
