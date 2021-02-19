@@ -21,11 +21,14 @@ var version = "UNDEFINED"
 type globalOptions struct {
 	user     string
 	password string
+	out      *bufio.Writer
 }
 
 // rootCommand creates the top-level `buneary` command without any functionality.
 func rootCommand() *cobra.Command {
-	var options globalOptions
+	options := globalOptions{
+		out: bufio.NewWriter(os.Stdout),
+	}
 
 	root := &cobra.Command{
 		Use:   "buneary",
@@ -44,7 +47,7 @@ for managing exchanges, managing queues and publishing messages to exchanges.`,
 	root.AddCommand(getCommand(&options))
 	root.AddCommand(publishCommand(&options))
 	root.AddCommand(deleteCommand(&options))
-	root.AddCommand(versionCommand())
+	root.AddCommand(versionCommand(&options))
 
 	root.PersistentFlags().
 		StringVarP(&options.user, "user", "u", "", "the username to connect with")
@@ -151,6 +154,8 @@ func runCreateExchange(options *createExchangeOptions, args []string) error {
 		return err
 	}
 
+	_, _ = options.out.WriteString("exchange created successfully")
+
 	return nil
 }
 
@@ -228,6 +233,8 @@ func runCreateQueue(options *createQueueOptions, args []string) error {
 		return err
 	}
 
+	_, _ = options.out.WriteString("queue created successfully")
+
 	return nil
 }
 
@@ -297,6 +304,8 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 	if err := provider.CreateBinding(binding); err != nil {
 		return err
 	}
+
+	_, _ = options.out.WriteString("queue created successfully")
 
 	return nil
 }
@@ -650,6 +659,8 @@ func runPublish(options *publishOptions, args []string) error {
 		return err
 	}
 
+	_, _ = options.out.WriteString("message published successfully")
+
 	return nil
 }
 
@@ -709,6 +720,8 @@ func runDeleteExchange(options *globalOptions, args []string) error {
 		return err
 	}
 
+	_, _ = options.out.WriteString("exchange deleted successfully")
+
 	return nil
 }
 
@@ -751,17 +764,21 @@ func runDeleteQueue(options *globalOptions, args []string) error {
 		return err
 	}
 
+	_, _ = options.out.WriteString("queue deleted successfully")
+
 	return nil
 }
 
 // versionCommand creates the `buneary version` command for printing release
 // information. This data is injected by the CI pipeline.
-func versionCommand() *cobra.Command {
+func versionCommand(options *globalOptions) *cobra.Command {
 	version := &cobra.Command{
 		Use:   "version",
 		Short: "Print version information",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Printf("buneary version %s", version)
+			output := fmt.Sprintf("buneary version %s", version)
+			_, _ = options.out.WriteString(output)
+
 			return nil
 		},
 	}
@@ -787,7 +804,8 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 
 	reader := bufio.NewReader(os.Stdin)
 
-	fmt.Print("User: ")
+	_, _ = options.out.WriteString("User: ")
+
 	user, _ = reader.ReadString('\n')
 	user = strings.TrimSpace(user)
 
@@ -799,11 +817,11 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 		os.Exit(0)
 	}()
 
-	fmt.Print("Password: ")
+	_, _ = options.out.WriteString("Password: ")
 
 	p, err := terminal.ReadPassword(int(syscall.Stdin))
 	if err != nil {
-		fmt.Println("error reading password from stdin")
+		_, _ = options.out.WriteString("error reading password from stdin")
 		os.Exit(1)
 	}
 
