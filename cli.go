@@ -825,7 +825,7 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 		os.Exit(1)
 	}
 
-	_, _ = os.Stdout.Write([]byte{'\n'})
+	_, _ = options.out.Write([]byte{'\n'})
 
 	password = string(p)
 
