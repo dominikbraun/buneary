@@ -326,6 +326,7 @@ func getCommand(options *globalOptions) *cobra.Command {
 	get.AddCommand(getQueueCommand(options))
 	get.AddCommand(getBindingsCommand(options))
 	get.AddCommand(getBindingCommand(options))
+	get.AddCommand(getMessagesCommand(options))
 
 	return get
 }
@@ -580,6 +581,47 @@ func runGetBindings(options *globalOptions, args []string) error {
 
 	table.Render()
 
+	return nil
+}
+
+// getMessagesOptions defines options for reading messages.
+type getMessagesOptions struct {
+	*globalOptions
+	max     int
+	requeue bool
+	force   bool
+}
+
+// getMessagesCommand creates the `buneary get messages` command, making sure that exactly
+// two arguments are passed.
+func getMessagesCommand(options *globalOptions) *cobra.Command {
+	getMessagesOptions := &getMessagesOptions{
+		globalOptions: options,
+	}
+
+	getMessages := &cobra.Command{
+		Use:   "messages <ADDRESS> <QUEUE NAME>",
+		Short: "Get messages in a queue",
+		Args:  cobra.ExactArgs(3),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runGetMessages(getMessagesOptions, args)
+		},
+	}
+
+	getMessages.Flags().
+		IntVar(&getMessagesOptions.max, "max", 1, "maximum messages to read")
+	getMessages.Flags().
+		BoolVar(&getMessagesOptions.requeue, "requeue", false, "re-queue the messages after reading them")
+	getMessages.Flags().
+		BoolVarP(&getMessagesOptions.force, "force", "f", false, "force running this command without opt-in")
+
+	return getMessages
+}
+
+// runGetMessages gets messages by reading the command line data, setting the
+// configuration and calling the GetMessages function. In case the password or
+// both the user and password aren't provided, it will go into interactive mode.
+func runGetMessages(options *getMessagesOptions, args []string) error {
 	return nil
 }
 
