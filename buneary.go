@@ -88,6 +88,15 @@ type Provider interface {
 	// get all bindings, pass a filter function that always returns true.
 	GetBindings(filter func(binding Binding) bool) ([]Binding, error)
 
+	// GetMessages reads max messages from the given queue. The messages will be
+	// re-queued if requeue is set to true. Otherwise, they will be removed from
+	// the queue and thus won't be read by subscribers.
+	//
+	// This behavior may not be obvious to the user, especially if they merely
+	// want to "take a look" into the queue without altering its state. Therefore,
+	// an implementation should require the user opt-in to this behavior.
+	GetMessages(queue Queue, max int, requeue bool) ([]Message, error)
+
 	// PublishMessage publishes a message to the given exchange. The exchange
 	// has to exist or must be created before the message is published.
 	//
@@ -439,6 +448,11 @@ func (b *buneary) GetBindings(filter func(binding Binding) bool) ([]Binding, err
 	}
 
 	return bindings, nil
+}
+
+// GetMessages reads messages from the given queue. See Provider.GetMessages for details.
+func (b *buneary) GetMessages(queue Queue, max int, requeue bool) ([]Message, error) {
+	return nil, nil
 }
 
 // PublishMessage publishes the given message. See Provider.PublishMessage for details.
