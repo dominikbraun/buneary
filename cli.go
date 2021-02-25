@@ -926,7 +926,7 @@ func confirm(options *globalOptions, message string) bool {
 	answer, _ := reader.ReadString('\n')
 	answer = strings.TrimSpace(answer)
 
-	_, _ = options.out.Write([]byte{'\n'})
+	_, _ = options.out.WriteString("\n")
 
 	return answer == "y" || answer == "yes"
 }
