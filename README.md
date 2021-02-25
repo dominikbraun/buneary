@@ -34,6 +34,7 @@ queues and publishing messages to exchanges.
     * [Get a queue](#get-a-queue)
     * [Get all bindings](#get-all-bindings)
     * [Get a binding](#get-a-binding)
+    * [Get messages in a queue](#get-messages-in-a-queue)
     * [Publish a message](#publish-a-message)
     * [Delete an exchange](#delete-an-exchange)
     * [Delete a queue](#delete-a-queue)
@@ -367,6 +368,39 @@ Get the binding or bindings between `my-exchange` and `my-queue` from a RabbitMQ
 
 ```
 $ buneary get binding localhost my-exchange my-queue
+```
+
+### Get messages in a queue
+
+**Syntax:**
+
+```
+$ buneary publish <ADDRESS> <QUEUE NAME> [flags]
+```
+
+**Arguments:**
+
+|Argument|Description|
+|-|-|
+|`ADDRESS`|The RabbitMQ AMQP address. If no port is specified, `5672` is used.|
+|`QUEUE NAME`|The name of the queue to read messages from.|
+
+**Flags:**
+
+|Flag|Short|Description|
+|-|-|-|
+|`--user`|`-u`|The username to connect with. If not specified, you will be asked for it.|
+|`--password`|`-p`|The password to authenticate with. If not specified, you will be asked for it.|
+|`--max`||The maximum amount of messages to read from the queue.|
+|`--requeue`||Reading messages will de-queue them. Re-queue the messages after reading them.|
+|`--force`|`-f`|Skip the manual confirmation and force reading the messages.|
+
+**Example:**
+
+Read up to 10 messages from the `my-queue` queue on a RabbitMQ server running on the local machine.
+
+```
+$ buneary get messages --max 10 localhost my-queue
 ```
 
 ### Publish a message

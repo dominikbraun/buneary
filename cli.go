@@ -315,7 +315,7 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 func getCommand(options *globalOptions) *cobra.Command {
 	get := &cobra.Command{
 		Use:   "get <COMMAND>",
-		Short: "Create a resource",
+		Short: "Get a resource",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -327,6 +327,7 @@ func getCommand(options *globalOptions) *cobra.Command {
 	get.AddCommand(getQueueCommand(options))
 	get.AddCommand(getBindingsCommand(options))
 	get.AddCommand(getBindingCommand(options))
+	get.AddCommand(getMessagesCommand(options))
 
 	return get
 }
@@ -584,6 +585,88 @@ func runGetBindings(options *globalOptions, args []string) error {
 	return nil
 }
 
+// getMessagesOptions defines options for reading messages.
+type getMessagesOptions struct {
+	*globalOptions
+	max     int
+	requeue bool
+	force   bool
+}
+
+// getMessagesCommand creates the `buneary get messages` command, making sure that exactly
+// two arguments are passed.
+func getMessagesCommand(options *globalOptions) *cobra.Command {
+	getMessagesOptions := &getMessagesOptions{
+		globalOptions: options,
+	}
+
+	getMessages := &cobra.Command{
+		Use:   "messages <ADDRESS> <QUEUE NAME>",
+		Short: "Get messages in a queue",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runGetMessages(getMessagesOptions, args)
+		},
+	}
+
+	getMessages.Flags().
+		IntVar(&getMessagesOptions.max, "max", 1, "maximum messages to read")
+	getMessages.Flags().
+		BoolVar(&getMessagesOptions.requeue, "requeue", false, "re-queue the messages after reading them")
+	getMessages.Flags().
+		BoolVarP(&getMessagesOptions.force, "force", "f", false, "force running this command without opt-in")
+
+	return getMessages
+}
+
+// runGetMessages gets messages by reading the command line data, setting the
+// configuration and calling the GetMessages function. In case the password or
+// both the user and password aren't provided, it will go into interactive mode.
+func runGetMessages(options *getMessagesOptions, args []string) error {
+	var (
+		address = args[0]
+		queue   = args[1]
+	)
+
+	message := "Reading the messages from the queue will de-queue them." +
+		"To re-queue them, pass the --requeue flag. Do you want to continue?"
+
+	if !options.force {
+		ok := confirm(options.globalOptions, message)
+		if !ok {
+			return nil
+		}
+	}
+
+	user, password := getOrReadInCredentials(options.globalOptions)
+
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
+
+	messages, err := provider.GetMessages(Queue{Name: queue}, options.max, options.requeue)
+	if err != nil {
+		return err
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Exchange", "Routing Key", "Body"})
+
+	for _, message := range messages {
+		row := make([]string, 3)
+		row[0] = message.Target.Name
+		row[1] = message.RoutingKey
+		row[2] = string(message.Body)
+		table.Append(row)
+	}
+
+	table.Render()
+
+	return nil
+}
+
 // publishOptions defines options for publishing a message.
 type publishOptions struct {
 	*globalOptions
@@ -831,6 +914,21 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 	password = string(p)
 
 	return user, password
+}
+
+// confirm asks the user to confirm the given message or question by answering with
+// "y" for yes or "n" for no. Returns true if the user confirmed the message.
+func confirm(options *globalOptions, message string) bool {
+	reader := bufio.NewReader(os.Stdin)
+	output := fmt.Sprintf("%s [y/N] ", message)
+
+	_, _ = options.out.WriteString(output)
+	answer, _ := reader.ReadString('\n')
+	answer = strings.TrimSpace(answer)
+
+	_, _ = options.out.Write([]byte{'\n'})
+
+	return answer == "y" || answer == "yes"
 }
 
 // boolToString returns "yes" if the given bool is true and "no" if it is false.

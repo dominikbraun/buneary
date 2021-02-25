@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 	"time"
@@ -87,6 +90,15 @@ type Provider interface {
 	// GetBindings returns all bindings that pass the provided filter function. To
 	// get all bindings, pass a filter function that always returns true.
 	GetBindings(filter func(binding Binding) bool) ([]Binding, error)
+
+	// GetMessages reads max messages from the given queue. The messages will be
+	// re-queued if requeue is set to true. Otherwise, they will be removed from
+	// the queue and thus won't be read by subscribers.
+	//
+	// This behavior may not be obvious to the user, especially if they merely
+	// want to "take a look" into the queue without altering its state. Therefore,
+	// an implementation should require the user opt-in to this behavior.
+	GetMessages(queue Queue, max int, requeue bool) ([]Message, error)
 
 	// PublishMessage publishes a message to the given exchange. The exchange
 	// has to exist or must be created before the message is published.
@@ -439,6 +451,83 @@ func (b *buneary) GetBindings(filter func(binding Binding) bool) ([]Binding, err
 	}
 
 	return bindings, nil
+}
+
+// GetMessages reads messages from the given queue. See Provider.GetMessages for details.
+//
+// ToDo: Maybe move the function-scoped types somewhere else.
+func (b *buneary) GetMessages(queue Queue, max int, requeue bool) ([]Message, error) {
+	// getMessagesRequestBody represents the HTTP request body for reading messages.
+	type getMessagesRequestBody struct {
+		Count    int    `json:"count"`
+		Requeue  bool   `json:"requeue"`
+		Encoding string `json:"encoding"`
+		Ackmode  string `json:"ackmode"`
+	}
+
+	// getMessagesRequestBody represents the HTTP response body returned by the RabbitMQ
+	// API endpoint for reading messages from a queue (/api/queues/vhost/name/get).
+	type getMessagesResponseBody []struct {
+		PayloadBytes int                    `json:"payload_bytes"`
+		Redelivered  bool                   `json:"redelivered"`
+		Exchange     string                 `json:"exchange"`
+		RoutingKey   string                 `json:"routing_key"`
+		Headers      map[string]interface{} `json:"headers"`
+		Payload      string                 `json:"payload"`
+	}
+
+	requestBody := getMessagesRequestBody{
+		Count:    max,
+		Requeue:  requeue,
+		Encoding: "auto",
+		Ackmode:  "ack_requeue_true",
+	}
+
+	requestBodyJson, err := json.Marshal(requestBody)
+	if err != nil {
+		return nil, err
+	}
+
+	uri := fmt.Sprintf("%s/api/queues/%%2F/%s/get", b.config.apiURI(), queue.Name)
+
+	request, err := http.NewRequest("POST", uri, bytes.NewReader(requestBodyJson))
+	if err != nil {
+		return nil, err
+	}
+
+	request.SetBasicAuth(b.config.User, b.config.Password)
+
+	response, err := (&http.Client{}).Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	if response.StatusCode != 200 {
+		return nil, fmt.Errorf("RabbitMQ server returned non-200 status: %s", response.Status)
+	}
+
+	defer func() {
+		_ = response.Body.Close()
+	}()
+
+	responseBody := getMessagesResponseBody{}
+
+	if err := json.NewDecoder(response.Body).Decode(&responseBody); err != nil {
+		return nil, err
+	}
+
+	messages := make([]Message, len(responseBody))
+
+	for i, m := range responseBody {
+		messages[i] = Message{
+			Target:     Exchange{Name: m.Exchange},
+			Headers:    m.Headers,
+			RoutingKey: m.RoutingKey,
+			Body:       []byte(m.Payload),
+		}
+	}
+
+	return messages, nil
 }
 
 // PublishMessage publishes the given message. See Provider.PublishMessage for details.
