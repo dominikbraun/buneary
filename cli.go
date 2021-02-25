@@ -314,7 +314,7 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 func getCommand(options *globalOptions) *cobra.Command {
 	get := &cobra.Command{
 		Use:   "get <COMMAND>",
-		Short: "Create a resource",
+		Short: "Get a resource",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return cmd.Help()
 		},
@@ -602,7 +602,7 @@ func getMessagesCommand(options *globalOptions) *cobra.Command {
 	getMessages := &cobra.Command{
 		Use:   "messages <ADDRESS> <QUEUE NAME>",
 		Short: "Get messages in a queue",
-		Args:  cobra.ExactArgs(3),
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGetMessages(getMessagesOptions, args)
 		},
@@ -622,6 +622,37 @@ func getMessagesCommand(options *globalOptions) *cobra.Command {
 // configuration and calling the GetMessages function. In case the password or
 // both the user and password aren't provided, it will go into interactive mode.
 func runGetMessages(options *getMessagesOptions, args []string) error {
+	var (
+		address = args[0]
+		queue   = args[1]
+	)
+
+	user, password := getOrReadInCredentials(options.globalOptions)
+
+	provider := NewProvider(&RabbitMQConfig{
+		Address:  address,
+		User:     user,
+		Password: password,
+	})
+
+	messages, err := provider.GetMessages(Queue{Name: queue}, options.max, options.requeue)
+	if err != nil {
+		return err
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Exchange", "Routing Key", "Body"})
+
+	for _, message := range messages {
+		row := make([]string, 3)
+		row[0] = message.Target.Name
+		row[1] = message.RoutingKey
+		row[2] = string(message.Body)
+		table.Append(row)
+	}
+
+	table.Render()
+
 	return nil
 }
 
