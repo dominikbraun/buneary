@@ -919,7 +919,7 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 // "y" for yes or "n" for no. Returns true if the user confirmed the message.
 func confirm(options *globalOptions, message string) bool {
 	reader := bufio.NewReader(os.Stdin)
-	output := fmt.Sprintf("%s [y/n] ", message)
+	output := fmt.Sprintf("%s [y/N] ", message)
 
 	_, _ = options.out.WriteString(output)
 	answer, _ := reader.ReadString('\n')
