@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"strings"
@@ -21,13 +22,13 @@ var version = "UNDEFINED"
 type globalOptions struct {
 	user     string
 	password string
-	out      *bufio.Writer
+	out      io.StringWriter
 }
 
 // rootCommand creates the top-level `buneary` command without any functionality.
 func rootCommand() *cobra.Command {
 	options := globalOptions{
-		out: bufio.NewWriter(os.Stdout),
+		out: os.Stdout,
 	}
 
 	root := &cobra.Command{
@@ -154,7 +155,7 @@ func runCreateExchange(options *createExchangeOptions, args []string) error {
 		return err
 	}
 
-	_, _ = options.out.WriteString("exchange created successfully")
+	_, _ = options.out.WriteString("exchange created successfully\n")
 
 	return nil
 }
@@ -233,7 +234,7 @@ func runCreateQueue(options *createQueueOptions, args []string) error {
 		return err
 	}
 
-	_, _ = options.out.WriteString("queue created successfully")
+	_, _ = options.out.WriteString("queue created successfully\n")
 
 	return nil
 }
@@ -305,7 +306,7 @@ func runCreateBinding(options *createBindingOptions, args []string) error {
 		return err
 	}
 
-	_, _ = options.out.WriteString("queue created successfully")
+	_, _ = options.out.WriteString("queue created successfully\n")
 
 	return nil
 }
@@ -742,7 +743,7 @@ func runPublish(options *publishOptions, args []string) error {
 		return err
 	}
 
-	_, _ = options.out.WriteString("message published successfully")
+	_, _ = options.out.WriteString("message published successfully\n")
 
 	return nil
 }
@@ -803,7 +804,7 @@ func runDeleteExchange(options *globalOptions, args []string) error {
 		return err
 	}
 
-	_, _ = options.out.WriteString("exchange deleted successfully")
+	_, _ = options.out.WriteString("exchange deleted successfully\n")
 
 	return nil
 }
@@ -847,7 +848,7 @@ func runDeleteQueue(options *globalOptions, args []string) error {
 		return err
 	}
 
-	_, _ = options.out.WriteString("queue deleted successfully")
+	_, _ = options.out.WriteString("queue deleted successfully\n")
 
 	return nil
 }
@@ -859,7 +860,7 @@ func versionCommand(options *globalOptions) *cobra.Command {
 		Use:   "version",
 		Short: "Print version information",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			output := fmt.Sprintf("buneary version %s", version)
+			output := fmt.Sprintf("buneary version %s\n", version)
 			_, _ = options.out.WriteString(output)
 
 			return nil
@@ -904,11 +905,11 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 
 	p, err := terminal.ReadPassword(int(syscall.Stdin))
 	if err != nil {
-		_, _ = options.out.WriteString("error reading password from stdin")
+		_, _ = options.out.WriteString("\nerror reading password from stdin")
 		os.Exit(1)
 	}
 
-	_, _ = options.out.Write([]byte{'\n'})
+	_, _ = options.out.WriteString("\n")
 
 	password = string(p)
 
