@@ -627,6 +627,16 @@ func runGetMessages(options *getMessagesOptions, args []string) error {
 		queue   = args[1]
 	)
 
+	message := "Reading the messages from the queue will de-queue them." +
+		"To re-queue them, pass the --requeue flag. Do you want to continue?"
+
+	if !options.force {
+		ok := confirm(options.globalOptions, message)
+		if !ok {
+			return nil
+		}
+	}
+
 	user, password := getOrReadInCredentials(options.globalOptions)
 
 	provider := NewProvider(&RabbitMQConfig{
@@ -903,6 +913,21 @@ func getOrReadInCredentials(options *globalOptions) (string, string) {
 	password = string(p)
 
 	return user, password
+}
+
+// confirm asks the user to confirm the given message or question by answering with
+// "y" for yes or "n" for no. Returns true if the user confirmed the message.
+func confirm(options *globalOptions, message string) bool {
+	reader := bufio.NewReader(os.Stdin)
+	output := fmt.Sprintf("%s [y/n]", message)
+
+	_, _ = options.out.WriteString(output)
+	answer, _ := reader.ReadString('\n')
+	answer = strings.TrimSpace(answer)
+
+	_, _ = options.out.Write([]byte{'\n'})
+
+	return answer == "y" || answer == "yes"
 }
 
 // boolToString returns "yes" if the given bool is true and "no" if it is false.
