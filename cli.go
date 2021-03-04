@@ -35,7 +35,7 @@ func rootCommand() *cobra.Command {
 		Use:   "buneary",
 		Short: "An easy-to-use CLI client for RabbitMQ.",
 		Long: `buneary, pronounced bun-ear-y, is an easy-to-use RabbitMQ command line client
-for managing exchanges, managing queues and publishing messages to exchanges.`,
+for managing exchanges, managing queues, publishing messages to exchanges and reading messages from queues.`,
 		Version:       version,
 		SilenceUsage:  true,
 		SilenceErrors: true,
