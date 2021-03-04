@@ -281,17 +281,17 @@ type buneary struct {
 func (b *buneary) setupChannel() error {
 	if b.channel != nil {
 		if err := b.channel.Close(); err != nil {
-			return err
+			return fmt.Errorf("closing AMQP channel: %w", err)
 		}
 	}
 
 	conn, err := amqp.Dial(b.config.URI())
 	if err != nil {
-		return err
+		return fmt.Errorf("dialling RabbitMQ server: %w", err)
 	}
 
 	if b.channel, err = conn.Channel(); err != nil {
-		return err
+		return fmt.Errorf("establishing AMQP channel: %w", err)
 	}
 
 	return nil
@@ -302,7 +302,7 @@ func (b *buneary) setupChannel() error {
 func (b *buneary) setupClient() error {
 	client, err := rabbithole.NewClient(b.config.apiURI(), b.config.User, b.config.Password)
 	if err != nil {
-		return err
+		return fmt.Errorf("creating rabbit-hole client: %w", err)
 	}
 	b.client = client
 
@@ -321,7 +321,7 @@ func (b *buneary) CreateExchange(exchange Exchange) error {
 		AutoDelete: exchange.AutoDelete,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("declaring exchange: %w", err)
 	}
 
 	return nil
@@ -340,7 +340,7 @@ func (b *buneary) CreateQueue(queue Queue) (string, error) {
 		AutoDelete: queue.AutoDelete,
 	})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("declaring queue: %w", err)
 	}
 
 	return "", nil
@@ -360,7 +360,7 @@ func (b *buneary) CreateBinding(binding Binding) error {
 		RoutingKey:      binding.Key,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("declaring binding: %w", err)
 	}
 
 	return nil
@@ -374,7 +374,7 @@ func (b *buneary) GetExchanges(filter func(exchange Exchange) bool) ([]Exchange,
 
 	exchangeInfos, err := b.client.ListExchanges()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing exchanges: %w", err)
 	}
 
 	var exchanges []Exchange
@@ -404,7 +404,7 @@ func (b *buneary) GetQueues(filter func(queue Queue) bool) ([]Queue, error) {
 
 	queueInfos, err := b.client.ListQueues()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing queues: %w", err)
 	}
 
 	var queues []Queue
@@ -432,7 +432,7 @@ func (b *buneary) GetBindings(filter func(binding Binding) bool) ([]Binding, err
 
 	bindingInfos, err := b.client.ListBindings()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("listing bindings: %w", err)
 	}
 
 	var bindings []Binding
@@ -485,14 +485,14 @@ func (b *buneary) GetMessages(queue Queue, max int, requeue bool) ([]Message, er
 
 	requestBodyJson, err := json.Marshal(requestBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("marshalling request body: %w", err)
 	}
 
 	uri := fmt.Sprintf("%s/api/queues/%%2F/%s/get", b.config.apiURI(), queue.Name)
 
 	request, err := http.NewRequest("POST", uri, bytes.NewReader(requestBodyJson))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating POST request: %w", err)
 	}
 
 	request.SetBasicAuth(b.config.User, b.config.Password)
@@ -541,7 +541,7 @@ func (b *buneary) PublishMessage(message Message) error {
 	}()
 
 	if err := b.channel.Publish(messageArgs(message)); err != nil {
-		return err
+		return fmt.Errorf("publishing message: %w", err)
 	}
 
 	return nil
@@ -555,7 +555,7 @@ func (b *buneary) DeleteExchange(exchange Exchange) error {
 
 	_, err := b.client.DeleteExchange("/", exchange.Name)
 	if err != nil {
-		return err
+		return fmt.Errorf("deleting exchange: %w", err)
 	}
 
 	return nil
@@ -569,7 +569,7 @@ func (b *buneary) DeleteQueue(queue Queue) error {
 
 	_, err := b.client.DeleteQueue("/", queue.Name)
 	if err != nil {
-		return err
+		return fmt.Errorf("deleting queue: %w", err)
 	}
 
 	return nil
@@ -580,7 +580,7 @@ func (b *buneary) DeleteQueue(queue Queue) error {
 func (b *buneary) Close() error {
 	if b.channel != nil {
 		if err := b.channel.Close(); err != nil {
-			return err
+			return fmt.Errorf("closing AMQP channel: %w", err)
 		}
 	}
 
