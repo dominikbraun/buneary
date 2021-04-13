@@ -119,7 +119,7 @@ func createExchangeCommand(options *globalOptions) *cobra.Command {
 // ToDo: Move the logic for parsing the exchange type into Exchange.
 func runCreateExchange(options *createExchangeOptions, args []string) error {
 	var (
-		address      = args[0]
+		address      = expandAddress(args[0])
 		name         = args[1]
 		exchangeType = args[2]
 	)
@@ -201,7 +201,7 @@ func createQueueCommand(options *globalOptions) *cobra.Command {
 // If the queue type is empty or invalid, the queue type defaults to Classic.
 func runCreateQueue(options *createQueueOptions, args []string) error {
 	var (
-		address   = args[0]
+		address   = expandAddress(args[0])
 		name      = args[1]
 		queueType = args[2]
 	)
@@ -275,7 +275,7 @@ func createBindingCommand(options *globalOptions) *cobra.Command {
 // --to-exchange flag has to be used.
 func runCreateBinding(options *createBindingOptions, args []string) error {
 	var (
-		address    = args[0]
+		address    = expandAddress(args[0])
 		name       = args[1]
 		target     = args[2]
 		bindingKey = args[3]
@@ -370,7 +370,7 @@ func getExchangeCommand(options *globalOptions) *cobra.Command {
 // as well as `buneary get exchange`.
 func runGetExchanges(options *globalOptions, args []string) error {
 	var (
-		address = args[0]
+		address = expandAddress(args[0])
 	)
 
 	user, password := getOrReadInCredentials(options)
@@ -455,7 +455,7 @@ func getQueueCommand(options *globalOptions) *cobra.Command {
 // `buneary get queue`.
 func runGetQueues(options *globalOptions, args []string) error {
 	var (
-		address = args[0]
+		address = expandAddress(args[0])
 	)
 
 	user, password := getOrReadInCredentials(options)
@@ -538,7 +538,7 @@ func getBindingCommand(options *globalOptions) *cobra.Command {
 // `buneary get binding`.
 func runGetBindings(options *globalOptions, args []string) error {
 	var (
-		address = args[0]
+		address = expandAddress(args[0])
 	)
 
 	user, password := getOrReadInCredentials(options)
@@ -624,7 +624,7 @@ func getMessagesCommand(options *globalOptions) *cobra.Command {
 // both the user and password aren't provided, it will go into interactive mode.
 func runGetMessages(options *getMessagesOptions, args []string) error {
 	var (
-		address = args[0]
+		address = expandAddress(args[0])
 		queue   = args[1]
 	)
 
@@ -700,7 +700,7 @@ func publishCommand(options *globalOptions) *cobra.Command {
 // both the user and password aren't provided, it will go into interactive mode.
 func runPublish(options *publishOptions, args []string) error {
 	var (
-		address    = args[0]
+		address    = expandAddress(args[0])
 		exchange   = args[1]
 		routingKey = args[2]
 		body       = args[3]
@@ -784,7 +784,7 @@ func deleteExchangeCommand(options *globalOptions) *cobra.Command {
 // both the user and password aren't provided, it will go into interactive mode.
 func runDeleteExchange(options *globalOptions, args []string) error {
 	var (
-		address = args[0]
+		address = expandAddress(args[0])
 		name    = args[1]
 	)
 
@@ -828,7 +828,7 @@ func deleteQueueCommand(options *globalOptions) *cobra.Command {
 // both the user and password aren't provided, it will go into interactive mode.
 func runDeleteQueue(options *globalOptions, args []string) error {
 	var (
-		address = args[0]
+		address = expandAddress(args[0])
 		name    = args[1]
 	)
 
@@ -929,6 +929,25 @@ func confirm(options *globalOptions, message string) bool {
 	_, _ = options.out.WriteString("\n")
 
 	return answer == "y" || answer == "yes"
+}
+
+// expandAddress takes an address in the form `localhost` or `localhost:8000`,
+// expands the host if it has been abbreviated (e.g. `lo` becomes `localhost`)
+// and returns the address with the expanded host.
+func expandAddress(address string) string {
+	tokens := strings.Split(address, ":")
+	host := tokens[0]
+
+	if host == "lo" {
+		host = "localhost"
+	}
+
+	if len(tokens) > 1 {
+		// Return the address containing a port if it has been specified.
+		return fmt.Sprintf("%s:%s", host, tokens[1])
+	}
+
+	return host
 }
 
 // boolToString returns "yes" if the given bool is true and "no" if it is false.
