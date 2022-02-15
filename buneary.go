@@ -460,7 +460,6 @@ func (b *buneary) GetMessages(queue Queue, max int, requeue bool) ([]Message, er
 	// getMessagesRequestBody represents the HTTP request body for reading messages.
 	type getMessagesRequestBody struct {
 		Count    int    `json:"count"`
-		Requeue  bool   `json:"requeue"`
 		Encoding string `json:"encoding"`
 		Ackmode  string `json:"ackmode"`
 	}
@@ -476,11 +475,15 @@ func (b *buneary) GetMessages(queue Queue, max int, requeue bool) ([]Message, er
 		Payload      string                 `json:"payload"`
 	}
 
+	ackMode := "ack_requeue_false"
+	if requeue {
+		ackMode = "ack_requeue_true"
+	}
+
 	requestBody := getMessagesRequestBody{
 		Count:    max,
-		Requeue:  requeue,
 		Encoding: "auto",
-		Ackmode:  "ack_requeue_true",
+		Ackmode:  ackMode,
 	}
 
 	requestBodyJson, err := json.Marshal(requestBody)

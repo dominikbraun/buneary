@@ -39,7 +39,7 @@ queues, publishing messages to exchanges and reading messages from queues.
     * [Delete an exchange](#delete-an-exchange)
     * [Delete a queue](#delete-a-queue)
 * [Credits](#credits)
-    
+
 ## Example
 
 In the following example, a message `Hello!` is published and sent to an exchange called `my-exchange`. The RabbitMQ
@@ -375,7 +375,7 @@ $ buneary get binding localhost my-exchange my-queue
 **Syntax:**
 
 ```
-$ buneary publish <ADDRESS> <QUEUE NAME> [flags]
+$ buneary get messages <ADDRESS> <QUEUE NAME> [flags]
 ```
 
 **Arguments:**
